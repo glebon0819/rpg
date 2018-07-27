@@ -1,0 +1,14 @@
+after creating the interface, the app should run in a loop, constantly listening for commands.
+
+upon receiving a command, different routes should be set up to respond appropriately, with a default response to catch any
+command not recognized
+
+a command should exist that displays a list of valid commands and their arguments (if any)
+
+a command should also exist that saves the game, saving your inventory, stats, progress, etc. to a .json file
+	perhaps when you start the game, it gives you the option to load different saves and shows you the name you chose and the date
+	it was created.
+
+a command to exit the program should also exist so you don't have to press ctrl-c or whatever to exit.
+
+not every command will produce a response at any time. the context matters and must be factored in while designing this thing

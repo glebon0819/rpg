@@ -12,3 +12,10 @@ a command should also exist that saves the game, saving your inventory, stats, p
 a command to exit the program should also exist so you don't have to press ctrl-c or whatever to exit.
 
 not every command will produce a response at any time. the context matters and must be factored in while designing this thing
+
+maybe create ASCII art for various enemies and items and such
+
+
+
+
+create function for rendering ASCII sprites and a function for retrieving save files from disc

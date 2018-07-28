@@ -1,0 +1,42 @@
+{
+	"gen":{
+		"nam":"Mark",
+		"created":"27/07/2018 19:29",
+		"lvl":3,
+		"exp":230,
+		"gold":25,
+		"silver":76
+	},
+	"stats":{
+		"str":2,
+		"int":6,
+		"lck":3
+	},
+	"inv":{
+		// a variation that uses name instead of ID # to make renaming and referencing slightly easier
+		"Backbiter":{
+			// ID #
+			"og":2034,
+			"qty":1,
+			"typ":"weapon",
+			"dmg":26,
+			"wgt":12,
+			"buffs":{
+				"fir":0,
+				"ice":3
+			},
+			"enchanted":true
+		},
+		"Common Ruby":{
+			"og":0001,
+			"qty":3,
+			"type":"miscellaneous"
+		}
+	}
+},
+{
+	"enemy":{
+		"current":"Goblin",
+		"hp":56
+	}
+}

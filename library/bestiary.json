@@ -1,0 +1,34 @@
+{
+	"Goblin":{
+		"hp":100,
+		"xp":50,
+		"abilities":{
+			
+		}
+	},
+	"Hobgoblin":{
+		"hp":110,
+		"xp":55,
+		"abilities":{
+
+		}
+	},
+	"Hemogoblin":{
+		"hp":140,
+		"xp":70,
+		"abilities":{
+
+		}
+	},
+	"Template":{
+		"hp":100,
+		"xp":50,
+		"wgt":10,
+		"abilities":{
+
+		},
+		"loot":{
+			"0001":10
+		}
+	}
+}

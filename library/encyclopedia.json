@@ -1,6 +1,22 @@
 {
 	"1":{
 		"nam":"Health Potion",
-		"val":5
+		"val":5,
+		"typ":"potion"
+	},
+	"2":{
+		"nam":"Log",
+		"val":1,
+		"typ":"misc"
+	},
+	"3":{
+		"nam":"Fish",
+		"val":1,
+		"typ":"food"
+	},
+	"4":{
+		"nam":"Iron Ore",
+		"val":3,
+		"typ":"misc"
 	}
 }

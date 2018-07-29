@@ -1,6 +1,15 @@
 const readline = require('readline');
 const fs = require('fs');
 
+var userData = {};
+var items = {};
+var monsters = {};
+
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+});
+
 var sessionData = {
 	// keeps track of how many lines the user has entered
 	'cycle' : 0,
@@ -11,12 +20,11 @@ var sessionData = {
 	'mode' : 'start'
 };
 
-var userData = {};
-
-const rl = readline.createInterface({
-	input: process.stdin,
-	output: process.stdout
-});
+// function that loads the library files
+function loadResources(){
+	var encyclopedia = fs.readFileSync('./library/encyclopedia.json', 'utf8');
+	items = JSON.parse(encyclopedia);
+}
 
 // function for retrieving saves from the save folder
 function getSaves(){
@@ -32,8 +40,37 @@ function getSaves(){
 	return saves;
 }
 
-// function that loads the library files
+// function that adds an item to player inventory
+function addToInv(itm, num, qty){
+	// get inventory items
+	var inv = Object.keys(userData.inv);
+	var match = false;
+	// if item is in inventory increment qty, if not, add item
+	inv.forEach(item => {
+		if(itm == item){
+			match = true;
+		}
+	});
 
+	if(match){
+		userData.inv[itm].qty = userData.inv[itm].qty + qty;
+	}else{
+		userData.inv[itm] = {og : num, qty : qty};
+	}
+
+	// print to screen message notifying player that an item was added to their inventory
+	console.log(`\n   ${qty} x '${itm}' added to inventory.\n`);
+}
+
+// function that removes an item from player inventory
+function remFromInv(itm, qty){
+
+}
+
+// function that checks if a cooldown is currently in effect, deletes old cooldowns
+function checkCooldowns(cmd){
+	// returns time left in seconds if there is active cooldown, false if not
+}
 
 // maps commands to functions and includes data about commands
 var commandMap = {
@@ -43,7 +80,7 @@ var commandMap = {
 		'expIn' : 1,
 		// messages to give before the extra inputs
 		'mess' : {
-			0 : '\n   % What\'s your name?\n'
+			0 : '\n   What\'s your name?\n'
 		},
 		'func' : function(cmd){
 			cmd.shift();
@@ -100,8 +137,7 @@ var commandMap = {
 						inv: {
 							'Health Potion' : {
 								og : 1,
-								qty : 1,
-								type : 'potion'
+								qty : 1
 							}
 						},
 						stats: {
@@ -172,6 +208,12 @@ var commandMap = {
 			}
 		}
 	},
+	// deletes a save profile
+	'delete' : {
+		'func' : function(cmd){
+
+		}
+	},
 	// barfs out a list of all of the commands
 	'commands' : {
 		'func' : function(cmd){
@@ -182,29 +224,72 @@ var commandMap = {
 			});
 		}
 	},
-	'adv' : {
-		'func' : function(cmd){
-			console.log('\n   You\'re now on an adventure.\n');
-		}
-	},
-	'drink' : {
-		'func' : function(cmd){
-			console.log('\n   You drink a potion. HP: (100/100)\n');
-		}
-	},
-	'eat' : {
-		'func' : function(cmd){
-			console.log('\n   You eat an apple. HP: (100/100)\n');
-		}
-	},
 	// shows the user a list of the items in their inventory
 	'inventory' : {
-		'func' : function(cmd){56
+		'func' : function(cmd){
 			console.log(`\n   ${userData.gen.nam}'s Inventory\n ========================================================\n`)
 			var items = Object.keys(userData.inv);
 			items.forEach(item => {
 				console.log('   ' + userData.inv[item].qty + ` x ${item}\n`);
 			});
+		}
+	},
+	// shows the user what stats they have
+	'stats' : {
+		'func' : function(cmd){
+
+		}
+	},
+	// used to assign points to different stats
+	'assign' : {
+		'func' : function(cmd){
+
+		}
+	},
+	// can be used to consume beverages and potions
+	'drink' : {
+		'func' : function(cmd){
+			console.log('\n   You drink a potion. HP: (100/100)\n');
+		}
+	},
+	// can be used to consume food items
+	'eat' : {
+		'func' : function(cmd){
+			console.log('\n   You eat an apple. HP: (100/100)\n');
+		}
+	},
+	// continues your latest battle
+	'adv' : {
+		'func' : function(cmd){
+			console.log('\n   You\'re now on an adventure.\n');
+		}
+	},
+	// fishes in the local area, adding fish to your inventory
+	'fish' : {
+		'func' : function(cmd){
+			// checks if any fishing cooldowns are in effect
+			// if so, print that it is not ready yet with the time left
+			// else add a fish to the player's inventory
+			addToInv('Fish', 3, 1);
+
+			// or maybe always check all functions for cooldowns before running them
+		}
+	},
+	// chops down in the local area, adding fish to your inventory
+	'chop' : {
+		'func' : function(cmd){
+			// checks if any chopping cooldowns are in effect
+			// if so, print that it is not ready yet with the time left
+			// else add a log to the player's inventory
+			addToInv('Log', 2, 1);
+		}
+	},
+	'mine' : {
+		'func' : function(cmd){
+			// checks if any mining cooldowns are in effect
+			// if so, print that it is not ready yet with the time left
+			// else add ore to the player's inventory
+			addToInv('Iron Ore', 2, 1);
 		}
 	},
 	// saves your user data to a JSON file in the 'saves' folder
@@ -231,17 +316,6 @@ var commandMap = {
 			rl.close();
 			console.log('\n !======================================================!');
 			process.exit(0);
-		}
-	},
-	'birth' : {
-		'expIn' : 3,
-		'mess' : {
-			0 : 'what is your babys name?',
-			1 : 'how much does it weigh?',
-			2 : 'how long is it?'
-		},
-		'func' : function(cmd){
-
 		}
 	}
 };	

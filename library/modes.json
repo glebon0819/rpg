@@ -1,0 +1,28 @@
+{
+	"start":{
+		// a whitelist of commands that can be used while in 'start' mode
+		"white":{
+			"0":"new",
+			"1":"load",
+			"2":"continue",
+			"3":"commands"
+		},
+		// and a blacklist
+		"black":{}
+	},
+	"general":{
+		"white":{},
+		"black":{
+			"0":"flee",
+			"1":"continue"
+		}
+	},
+	"market":{
+		"white":{
+			"0":"leave",
+			"1":"sell",
+			"2":"buy"
+		},
+		"black":{}
+	}
+}

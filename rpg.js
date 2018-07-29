@@ -37,7 +37,6 @@ function getSaves(){
 
 // maps commands to functions and includes data about commands
 var commandMap = {
-
 	// creates a new game profile
 	'new' : {
 		// expected number of additional inputs
@@ -173,6 +172,16 @@ var commandMap = {
 			}
 		}
 	},
+	// barfs out a list of all of the commands
+	'commands' : {
+		'func' : function(cmd){
+			console.log(`\n   Commands\n ========================================================\n`);
+			var cmds = Object.keys(commandMap);
+			cmds.forEach(cmd => {
+				console.log(`   ${cmd}\n`);
+			});
+		}
+	},
 	'adv' : {
 		'func' : function(cmd){
 			console.log('\n   You\'re now on an adventure.\n');
@@ -190,8 +199,12 @@ var commandMap = {
 	},
 	// shows the user a list of the items in their inventory
 	'inventory' : {
-		'func' : function(cmd){
-
+		'func' : function(cmd){56
+			console.log(`\n   ${userData.gen.nam}'s Inventory\n ========================================================\n`)
+			var items = Object.keys(userData.inv);
+			items.forEach(item => {
+				console.log('   ' + userData.inv[item].qty + ` x ${item}\n`);
+			});
 		}
 	},
 	// saves your user data to a JSON file in the 'saves' folder
@@ -260,10 +273,10 @@ function run(){
 		}
 		catch(err){
 			if(err instanceof TypeError){
-				console.log(`\n   % '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
+				console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
 			}
 			else{
-				console.log('\n   % Unknown error encountered.\n');
+				console.log('\n   Unknown error encountered.\n');
 			}
 			sessionData.linesSince++;
 		}

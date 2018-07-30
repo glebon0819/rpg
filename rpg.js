@@ -1,9 +1,10 @@
 const readline = require('readline');
 const fs = require('fs');
 
-var userData = {};
+var userData = {cooldowns : {}};
 var items = {};
 var monsters = {};
+var modes = {};
 
 const rl = readline.createInterface({
 	input: process.stdin,
@@ -20,10 +21,55 @@ var sessionData = {
 	'mode' : 'start'
 };
 
+function getTimestamp(readable){
+	var now = new Date();
+	var dd = now.getDate();
+	var mm = now.getMonth()+1;
+	var yyyy = now.getFullYear();
+	var hh = now.getHours();
+	var mm2 = now.getMinutes();
+	var ss = now.getSeconds();
+	var mmm = now.getMilliseconds();
+
+	if(dd < 10) {
+	    dd = '0' + dd;
+	} 
+	if(mm < 10) {
+	    mm = '0' + mm;
+	}
+	if(hh < 10) {
+	    hh = '0' + hh;
+	}
+	if(mm2 < 10) {
+	    mm2 = '0' + mm2;
+	}
+	if(ss < 10) {
+	    ss = '0' + ss;
+	}
+	if(mmm < 10){
+		mmm = '00' + mmm;
+	}
+	else if(mmm < 100){
+		mmm = '0' + mmm;
+	}
+
+	if(readable){
+		timestamp = (dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + mm2 + ':' + ss);
+	}
+	else{
+		timestamp = (dd + mm + yyyy + hh + mm2 + ss + mmm);
+	}
+	return timestamp;
+}
+
 // function that loads the library files
 function loadResources(){
 	var encyclopedia = fs.readFileSync('./library/encyclopedia.json', 'utf8');
 	items = JSON.parse(encyclopedia);
+	var bestiary = fs.readFileSync('./library/bestiary.json', 'utf8');
+	monsters = JSON.parse(bestiary);
+	var gamemodes = fs.readFileSync('./library/modes.json', 'utf8');
+	modes = JSON.parse(gamemodes);
 }
 
 // function for retrieving saves from the save folder
@@ -85,9 +131,80 @@ function remFromInv(itm, qty){
 	}
 }
 
-// function that checks if a cooldown is currently in effect, deletes old cooldowns
-function checkCooldowns(cmd){
-	// returns time left in seconds if there is active cooldown, false if not
+// checks if a command exists, returns false if not
+function cmdExists(cmd){
+	var exists = false;
+	var commands = Object.keys(commandMap);
+	commands.forEach(command => {
+		if(command == cmd){
+			exists = true;
+		}
+	});
+	return exists;
+}
+
+// checks if a command is allowed under the current mode
+function checkMode(cmd){
+	var allowed = false;
+	// if whitelist is defined, use that. else, use blacklist
+	if(Object.keys(modes[sessionData.mode].white).length > 0){
+		for(var commandKey in modes[sessionData.mode].white){
+			if(modes[sessionData.mode].white[commandKey] == cmd){
+				allowed = true;
+			}
+		}
+	}
+	else{
+		allowed = true;
+		for(var commandKey in modes[sessionData.mode].black){
+			if(modes[sessionData.mode].black[commandKey] == cmd){
+				allowed = false;
+			}
+		}
+	}
+	return allowed;
+}
+
+function createCooldown(cmd, sec){
+	// converts seconds to milliseconds
+	var dur = sec * 1000;
+	// add a cooldown to the userData
+	userData.cooldowns[cmd] = {beg : getTimestamp(false), dur : sec};
+	// create a timer to lift the cooldown
+	setTimeout(removeCooldown, dur, cmd);
+}
+
+function removeCooldown(cmd){
+	delete userData.cooldowns[cmd];
+	//console.log(`   '${cmd}' can now be used again.\n`);
+}
+
+// function that checks if a cooldown is currently in effect
+// returns time left in seconds if there is active cooldown, false if not
+function checkCooldown(cmd){
+	var timeleft = false;
+	Object.keys(userData.cooldowns).forEach(command => {
+		if(command == cmd){
+			timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
+		}
+	});
+
+	return timeleft;
+}
+
+// cleans up cooldowns, buffs, etc. that are left over from the last session
+// removes expired things and sets timeouts for things that are still active
+function cleanUp(){
+	console.log('cleanup begun');
+	for(var command in userData.cooldowns){
+		var timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
+		if(timeleft > 0){
+			setTimeout(removeCooldown, timeleft * 1000, command);
+		}
+		else{
+			delete userData.cooldowns[command];
+		}
+	}
 }
 
 // maps commands to functions and includes data about commands
@@ -117,35 +234,11 @@ var commandMap = {
 				});
 
 				if(available){
-					var now = new Date();
-					var dd = now.getDate();
-					var mm = now.getMonth()+1;
-					var yyyy = now.getFullYear();
-					var hh = now.getHours();
-					var mm2 = now.getMinutes();
-					var ss = now.getSeconds();
-
-					if(dd < 10) {
-					    dd = '0' + dd;
-					} 
-					if(mm < 10) {
-					    mm = '0' + mm;
-					}
-					if(hh < 10) {
-					    hh = '0' + hh;
-					}
-					if(mm2 < 10) {
-					    mm2 = '0' + mm2;
-					}
-					if(ss < 10) {
-					    ss = '0' + ss;
-					}
-
 					userData = {
 						gen: {
 							nam : username,
-							dat : (dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + mm2 + ':' + ss),
-							dt2 : (dd + mm + yyyy + hh + mm2 + ss),
+							dat : getTimestamp(true),
+							dt2 : getTimestamp(false),
 							lvl : 1,
 							exp : 0,
 							gld : 5,
@@ -164,7 +257,8 @@ var commandMap = {
 							str : 0,
 							int : 0,
 							lck : 0
-						}
+						},
+						cooldowns: {}
 					};
 
 					//userData.gen.nam = username;
@@ -220,6 +314,11 @@ var commandMap = {
 					var json = fs.readFileSync('./saves/' + filename, 'utf8');
 					var data = JSON.parse(json);
 					userData = data;
+					sessionData.mode = 'general';
+					
+					// clean up cooldowns, buffs, etc. left over from last session
+					cleanUp();
+
 					console.log(`\n   Welcome back, ${userData.gen.nam}!\n`)
 				}
 				else{
@@ -350,6 +449,9 @@ var commandMap = {
 			// else add a fish to the player's inventory
 			addToInv('Fish', 3, 1);
 
+			// create cooldown
+			createCooldown('fish', 30);
+
 			// or maybe always check all functions for cooldowns before running them
 		}
 	},
@@ -361,7 +463,9 @@ var commandMap = {
 			// if so, print that it is not ready yet with the time left
 			// else add a log to the player's inventory
 			addToInv('Log', 2, 1);
+
 			// create cooldown
+			createCooldown('chop', 30);
 		}
 	},
 	'mine' : {
@@ -371,6 +475,9 @@ var commandMap = {
 			// if so, print that it is not ready yet with the time left
 			// else add ore to the player's inventory
 			addToInv('Iron Ore', 2, 1);
+
+			// create cooldown
+			createCooldown('mine', 60);
 		}
 	},
 	// saves your user data to a JSON file in the 'saves' folder
@@ -406,11 +513,11 @@ var commandMap = {
 function run(){
 
 	if(sessionData.cycle === 0){
+		loadResources();
+
 		console.log('\n !=============== [Welcome to Test RPG!] ===============!');
 		commandMap['profiles'].func('');
-		console.log('   Use \'new\' followed by your desired username to start\n   a new game or \'load\' followed by the username of your\n   desired profile to load a previously saved game.\n')
-		//console.log(getSaves());
-
+		console.log('   Use \'new\' followed by your desired username to start\n   a new game or \'load\' followed by the username of your\n   desired profile to load a previously saved game.\n');
 	}
 
 	rl.question(' ', (command) => {
@@ -425,22 +532,39 @@ function run(){
 		var root_command = commands[0];
 		//commandMap[root_command].func(commands);
 
-		// check for cooldown on command
-
 		// check if root_command is an actual command
-		// if it's a command, run it, if not, print an error message
+		if(cmdExists(root_command)){
 
-		try {
-			commandMap[root_command].func(commands);
-			sessionData.lastCmd = root_command;
-		}
-		catch(err){
-			if(err instanceof TypeError){
-				console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
+			// check if the command is allowed in the current mode
+			if(checkMode(root_command)){
+
+				// check for cooldown on command
+				var hasCooldown = checkCooldown(root_command);
+				if(hasCooldown === false){
+
+					// if none of the above, run command
+					commandMap[root_command].func(commands);
+					sessionData.lastCmd = root_command;
+				}
+				else{
+					var unit = 'seconds';
+					if(hasCooldown > 3599){
+						hasCooldown = Math.floor(hasCooldown / 3600);
+						unit = 'hours';
+					}
+					else if(hasCooldown > 59){
+						hasCooldown = Math.floor(hasCooldown / 60);
+						unit = 'minutes';
+					}
+					console.log(`\n   That command is not ready yet. ${hasCooldown} ${unit} left until ready.\n`);
+				}
 			}
 			else{
-				console.log('\n   Unknown error encountered.\n');
+				console.log('\n   That command is not allowed right now. Create or load a profile, then try again.\n');
 			}
+		}
+		else{
+			console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
 			sessionData.linesSince++;
 		}
 

@@ -64,7 +64,25 @@ function addToInv(itm, num, qty){
 
 // function that removes an item from player inventory
 function remFromInv(itm, qty){
+	// get inventory items
+	var inv = Object.keys(userData.inv);
+	var match = false;
+	// if item is in inventory decrement qty, if not, remove item
+	inv.forEach(item => {
+		if(itm == item){
+			match = true;
+		}
+	});
 
+	if(match){
+		userData.inv[itm].qty = userData.inv[itm].qty - qty;
+		if(userData.inv[itm].qty <= 0){
+			delete userData.inv[itm];
+		}
+		return true;
+	}else{
+		return false;
+	}
 }
 
 // function that checks if a cooldown is currently in effect, deletes old cooldowns
@@ -76,6 +94,8 @@ function checkCooldowns(cmd){
 var commandMap = {
 	// creates a new game profile
 	'new' : {
+		// what command group it belongs to
+		'grp' : 'Profile',
 		// expected number of additional inputs
 		'expIn' : 1,
 		// messages to give before the extra inputs
@@ -162,21 +182,24 @@ var commandMap = {
 		}
 	},
 	'profiles' : {
+		'grp' : 'Profile',
 		'func' : function(cmd){
 			var profiles = getSaves();
 			if(profiles.length == 0){
 				console.log('\n   No save files were found.\n')
 			}
 			else {
-				console.log('   We found the following save files on your disc:');
+				console.log('\n   We found the following save files on your disc:');
 				profiles.forEach(profile => {
 					console.log(`\n   +  Created on ${profile.date} ........ "${profile.name}"`);
 				});
+				console.log('');
 			}
 		}
 	},
 	// loads user data from a save file
 	'load' : {
+		'grp' : 'Profile',
 		'func' : function(cmd){
 			cmd.shift();
 			var profileName = cmd.join(' ');
@@ -204,18 +227,46 @@ var commandMap = {
 				}
 			}
 			else{
-				console.log('\n   Load failed. No profile name provided.\n')
+				console.log('\n   Load failed. No profile name provided.\n');
 			}
 		}
 	},
 	// deletes a save profile
 	'delete' : {
+		'grp' : 'Profile',
 		'func' : function(cmd){
+			cmd.shift();
+			var profileName = cmd.join(' ');
+			var filename = '';
 
+			// make sure user entered a profile name
+			if(profileName.length > 0){
+				// check if profile exists
+				var profiles = getSaves();
+				profiles.forEach(profile => {
+					if(profile.name == profileName){
+						filename = profile.file;
+					}
+				});
+
+				if(filename.length > 0){
+					fs.unlink('./saves/' + filename, (err) => {
+						if (err) throw err;
+						console.log(`\n   ${profileName} was deleted.\n`);
+					});
+				}
+				else{
+					console.log(`\n   Could not locate profile "${profileName}".\n`);
+				}
+			}
+			else{
+				console.log('\n   Delete failed. No profile name provided.\n');
+			}
 		}
 	},
 	// barfs out a list of all of the commands
 	'commands' : {
+		'grp' : 'Miscellaneous',
 		'func' : function(cmd){
 			console.log(`\n   Commands\n ========================================================\n`);
 			var cmds = Object.keys(commandMap);
@@ -226,46 +277,73 @@ var commandMap = {
 	},
 	// shows the user a list of the items in their inventory
 	'inventory' : {
+		'grp' : 'Inventory',
 		'func' : function(cmd){
-			console.log(`\n   ${userData.gen.nam}'s Inventory\n ========================================================\n`)
+			console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
 			var items = Object.keys(userData.inv);
 			items.forEach(item => {
 				console.log('   ' + userData.inv[item].qty + ` x ${item}\n`);
 			});
+			console.log(' ========================================================\n');
+		}
+	},
+	// drops an item from inventory
+	'drop' : {
+		'grp' : 'Inventory',
+		'func' : function(cmd){
+			cmd.shift();
+			var item = cmd.join(' ');
+			if(item.length > 0){
+				if(remFromInv(item, 1)){
+					console.log(`\n   '${item}' dropped from inventory.\n`);
+				}
+				else{
+					console.log(`\n   Failed to drop '${item}' from inventory. No such item found.\n`);
+				}
+			}
+			else{
+				console.log(`\n   No item specified to drop.\n`);
+			}
 		}
 	},
 	// shows the user what stats they have
 	'stats' : {
+		'grp' : 'Stats',
 		'func' : function(cmd){
 
 		}
 	},
 	// used to assign points to different stats
 	'assign' : {
+		'grp' : 'Stats',
 		'func' : function(cmd){
 
 		}
 	},
 	// can be used to consume beverages and potions
 	'drink' : {
+		'grp' : 'Inventory',
 		'func' : function(cmd){
 			console.log('\n   You drink a potion. HP: (100/100)\n');
 		}
 	},
 	// can be used to consume food items
 	'eat' : {
+		'grp' : 'Inventory',
 		'func' : function(cmd){
 			console.log('\n   You eat an apple. HP: (100/100)\n');
 		}
 	},
 	// continues your latest battle
 	'adv' : {
+		'grp' : 'Miscellaneous',
 		'func' : function(cmd){
 			console.log('\n   You\'re now on an adventure.\n');
 		}
 	},
 	// fishes in the local area, adding fish to your inventory
 	'fish' : {
+		'grp' : 'Gathering',
 		'func' : function(cmd){
 			// checks if any fishing cooldowns are in effect
 			// if so, print that it is not ready yet with the time left
@@ -277,14 +355,17 @@ var commandMap = {
 	},
 	// chops down in the local area, adding fish to your inventory
 	'chop' : {
+		'grp' : 'Gathering',
 		'func' : function(cmd){
 			// checks if any chopping cooldowns are in effect
 			// if so, print that it is not ready yet with the time left
 			// else add a log to the player's inventory
 			addToInv('Log', 2, 1);
+			// create cooldown
 		}
 	},
 	'mine' : {
+		'grp' : 'Gathering',
 		'func' : function(cmd){
 			// checks if any mining cooldowns are in effect
 			// if so, print that it is not ready yet with the time left
@@ -294,6 +375,7 @@ var commandMap = {
 	},
 	// saves your user data to a JSON file in the 'saves' folder
 	'save' : {
+		'grp' : 'Profile',
 		'func' : function(cmd){
 			if(Object.keys(userData).length > 0){
 				if(userData.gen.dt2.length > 0){
@@ -312,6 +394,7 @@ var commandMap = {
 	},
 	// exits the game
 	'exit' : {
+		'grp' : 'Miscellaneous',
 		'func' : function(cmd){
 			rl.close();
 			console.log('\n !======================================================!');
@@ -323,9 +406,9 @@ var commandMap = {
 function run(){
 
 	if(sessionData.cycle === 0){
-		console.log('\n !=============== [Welcome to Test RPG!] ===============!\n');
+		console.log('\n !=============== [Welcome to Test RPG!] ===============!');
 		commandMap['profiles'].func('');
-		console.log('\n   Use \'new\' followed by your desired username to start\n   a new game or \'load\' followed by the username of your\n   desired profile to load a previously saved game.\n')
+		console.log('   Use \'new\' followed by your desired username to start\n   a new game or \'load\' followed by the username of your\n   desired profile to load a previously saved game.\n')
 		//console.log(getSaves());
 
 	}
@@ -341,6 +424,12 @@ function run(){
 
 		var root_command = commands[0];
 		//commandMap[root_command].func(commands);
+
+		// check for cooldown on command
+
+		// check if root_command is an actual command
+		// if it's a command, run it, if not, print an error message
+
 		try {
 			commandMap[root_command].func(commands);
 			sessionData.lastCmd = root_command;

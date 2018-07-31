@@ -70,7 +70,7 @@
 		"nam":"Water",
 		"val":0.25,
 		"typ":"beverage",
-		"buffs":{
+		"effects":{
 			"ap":10
 		}
 	},

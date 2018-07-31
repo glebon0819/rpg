@@ -236,20 +236,52 @@ function consume(itm){
 	var effects = items[id].effects;
 	for(var effect in effects){
 		if(effect == 'hp'){
-			userData.gen.hp += effects[effect];
-			if(userData.gen.hp > userData.gen.hpm){
-				userData.gen.hp = userData.gen.hpm;
-			}
+			changeHP(effects[effect]);
 		}
 		else if(effect == 'ap'){
-			userData.gen.ap += effects[effect];
-			if(userData.gen.ap > userData.gen.apm){
-				userData.gen.ap = userData.gen.apm;
-			}
+			changeAP(effects[effect]);
 		}
 	}
 
 	remFromInv(itm, 1);
+}
+
+function changeAP(val){
+	userData.gen.ap += val;
+	if(userData.gen.ap > userData.gen.apm){
+		userData.gen.ap = userData.gen.apm;
+		//clearInterval(replenish);
+	}
+	else if(userData.gen.ap < 0){
+		userData.gen.ap = 0;
+	}
+
+	// if ap is less than max, replenish it
+	/*if(userData.gen.ap < userData.gen.apm && typeof replenish == undefined){
+		// effected by user's resilience stat
+		var replenish = setInterval(changeAP(1), 1000);
+	}*/
+
+	console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
+}
+
+function changeHP(val){
+	userData.gen.hp += val;
+	if(userData.gen.hp > userData.gen.hpm){
+		userData.gen.hp = userData.gen.hpm;
+		//clearInterval(replenish);
+	}
+	else if(userData.gen.hp < 0){
+		userData.gen.hp = 0;
+	}
+
+	// if ap is less than max, replenish it
+	/*if(userData.gen.ap < userData.gen.apm && typeof replenish == undefined){
+		// effected by user's resilience stat
+		var replenish = setInterval(changeAP(1), 1000);
+	}*/
+
+	console.log(`   ${(val > 0 ? '+' : '-')}  HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
 }
 
 // maps commands to functions and includes data about commands
@@ -298,14 +330,16 @@ var commandMap = {
 						},
 						inv: {
 							'Health Potion' : {
-								typ : 'potion',
 								og : 1,
 								qty : 1
 							},
 							'Poison' : {
-								typ : 'beverage',
 								og : 5,
 								qty : 1
+							},
+							'Water' : {
+								og : 12,
+								qty : 2
 							}
 						},
 						stats: {
@@ -536,10 +570,10 @@ var commandMap = {
 				// check if is in inventory
 				if(isInInv(itm)){
 					// check if is food
-					if(userData.inv[itm].typ == 'potion' || userData.inv[itm].typ == 'beverage'){
+					if(items[userData.inv[itm].og].typ == 'potion' || items[userData.inv[itm].og].typ == 'beverage'){
 						// consume (which removes it from inventory and applies the buff/effect)
-						consume(itm);
 						console.log(`\n   You drink ${itm}.\n`);
+						consume(itm);
 					}
 					else{
 						console.log('\n   You cannot drink that item.\n');
@@ -621,6 +655,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			addToInv('Log', 2, 1);
+			changeAP(-20);
 
 			// create cooldown
 			createCooldown('chop', 30);
@@ -675,6 +710,12 @@ var commandMap = {
 	'hp' : {
 		'func' : function(cmd){
 			commandMap['health'].func(cmd);
+		}
+	},
+
+	'ap' : {
+		'func' : function(cmd){
+			console.log(`\n   Your AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 		}
 	}
 };	

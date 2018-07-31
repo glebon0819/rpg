@@ -2,7 +2,10 @@
 	"1":{
 		"nam":"Health Potion",
 		"val":5,
-		"typ":"potion"
+		"typ":"potion",
+		"effects":{
+			"hp":10
+		}
 	},
 	"2":{
 		"nam":"Log",
@@ -12,11 +15,86 @@
 	"3":{
 		"nam":"Fish",
 		"val":1,
-		"typ":"food"
+		"typ":"food",
+		"effects":{
+			"hp":5
+		}
 	},
 	"4":{
 		"nam":"Iron Ore",
 		"val":3,
 		"typ":"misc"
+	},
+	"5":{
+		"nam":"Poison",
+		"val":5,
+		"typ":"beverage",
+		"effects":{
+			"hp":-10
+		}
+	},
+	"6":{
+		"nam":"Berries",
+		"val":0.5,
+		"typ":"food",
+		"effects":{
+			"hp":2
+		}
+	},
+	"7":{
+		"nam":"Nuts",
+		"val":0.10,
+		"typ":"food"
+	},
+	"8":{
+		"nam":"Squash",
+		"val":0.10,
+		"typ":"food"
+	},
+	"9":{
+		"nam":"Mushroom",
+		"val":0.05,
+		"typ":"food"
+	},
+	"10":{
+		"nam":"Carrot",
+		"val":0.10,
+		"typ":"food"
+	},
+	"11":{
+		"nam":"Gold Ore",
+		"val":8,
+		"typ":"misc"
+	},
+	"12":{
+		"nam":"Water",
+		"val":0.25,
+		"typ":"beverage",
+		"buffs":{
+			"ap":10
+		}
+	},
+	"13":{
+		"nam":"Crusader's Helmet",
+		"val":10,
+		"hp":100,
+		"hpm":100,
+		"typ":"helm",
+		"arm":"5",
+		"stats":{
+			"strength":1,
+			"stamina":1
+		}
+	},
+	"14":{
+		"nam":"Goblin Coif",
+		"val":3,
+		"hp":50,
+		"hpm":50,
+		"typ":"helm",
+		"arm":"2",
+		"stats":{
+			"agility":1
+		}
 	}
 }

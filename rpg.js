@@ -6,6 +6,8 @@ var items = {};
 var monsters = {};
 var modes = {};
 
+var replenish = null;
+
 const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout
@@ -193,8 +195,10 @@ function checkCooldown(cmd){
 }
 
 // cleans up cooldowns, buffs, etc. that are left over from the last session
-// removes expired things and sets timeouts for things that are still active
+// removes expired things and sets timeouts and intervals for things that are still active
 function cleanUp(){
+
+	// goes through each cooldown, removes expired ones and sets new timers for ones that should still be active
 	for(var command in userData.cooldowns){
 		var timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
 		if(timeleft > 0){
@@ -203,6 +207,13 @@ function cleanUp(){
 		else{
 			delete userData.cooldowns[command];
 		}
+	}
+
+	// begins replenishing AP again if it is not at max
+	if(userData.gen.ap < userData.gen.apm){
+		setInterval(function(){
+			changeAP(1);
+		}, 3000);
 	}
 }
 
@@ -250,19 +261,22 @@ function changeAP(val){
 	userData.gen.ap += val;
 	if(userData.gen.ap > userData.gen.apm){
 		userData.gen.ap = userData.gen.apm;
-		//clearInterval(replenish);
+		clearInterval(replenish);
+		replenish = null;
 	}
 	else if(userData.gen.ap < 0){
 		userData.gen.ap = 0;
 	}
 
 	// if ap is less than max, replenish it
-	/*if(userData.gen.ap < userData.gen.apm && typeof replenish == undefined){
+	if(userData.gen.ap < userData.gen.apm && replenish === null){
 		// effected by user's resilience stat
-		var replenish = setInterval(changeAP(1), 1000);
-	}*/
+		replenish = setInterval(function(){
+			changeAP(1);
+		}, 3000);
+	}
 
-	console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
+	//console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 }
 
 function changeHP(val){
@@ -282,6 +296,11 @@ function changeHP(val){
 	}*/
 
 	console.log(`   ${(val > 0 ? '+' : '-')}  HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
+}
+
+// checks if AP is above or equal to a given value
+function checkAP(num){
+	return (userData.gen.ap >= num ? true : false);
 }
 
 // maps commands to functions and includes data about commands
@@ -601,10 +620,10 @@ var commandMap = {
 				// check if is in inventory
 				if(isInInv(itm)){
 					// check if is food
-					if(userData.inv[itm].typ == 'food'){
+					if(items[userData.inv[itm].og].typ == 'food'){
 						// consume (which removes it from inventory and applies the buff/effect)
-						consume(itm);
 						console.log(`\n   You ate ${itm}.\n`);
+						consume(itm);
 					}
 					else{
 						console.log('\n   You cannot eat that item.\n');
@@ -631,11 +650,17 @@ var commandMap = {
 	'forage' : {
 		'grp' : 'Gathering',
 		'func' : function(cmd){
-
-			addToInv('Berries', 6, 2, 'food');
+			
+			if(checkAP(5)){
+				addToInv('Berries', 6, 2);
+				changeAP(-5);
+			}
+			else{
+				console.log('\n   Insufficient AP.\n');
+			}
 
 			// create cooldown
-			createCooldown('forage', 20);
+			//createCooldown('forage', 20);
 		}
 	},
 	// fishes in the local area, adding fish to your inventory
@@ -643,10 +668,16 @@ var commandMap = {
 		'grp' : 'Gathering',
 		'func' : function(cmd){
 
-			addToInv('Fish', 3, 1, 'food');
+			if(checkAP(10)){
+				addToInv('Fish', 3, 1);
+				changeAP(-10);
+			}
+			else{
+				console.log('\n   Insufficient AP.\n');
+			}
 
 			// create cooldown
-			createCooldown('fish', 30);
+			//createCooldown('fish', 30);
 		}
 	},
 	// chops down in the local area, adding logs to your inventory
@@ -654,11 +685,16 @@ var commandMap = {
 		'grp' : 'Gathering',
 		'func' : function(cmd){
 
-			addToInv('Log', 2, 1);
-			changeAP(-20);
+			if(checkAP(20)){
+				addToInv('Log', 2, 1);
+				changeAP(-20);
+			}
+			else{
+				console.log('\n   Insufficient AP.\n');
+			}
 
 			// create cooldown
-			createCooldown('chop', 30);
+			//createCooldown('chop', 30);
 		}
 	},
 	// mines down in the local area, adding iron ore to your inventory
@@ -666,10 +702,16 @@ var commandMap = {
 		'grp' : 'Gathering',
 		'func' : function(cmd){
 
-			addToInv('Iron Ore', 2, 1);
+			if(checkAP(50)){
+				addToInv('Iron Ore', 4, 1);
+				changeAP(-50);
+			}
+			else{
+				console.log('\n   Insufficient AP.\n');
+			}
 
 			// create cooldown
-			createCooldown('mine', 60);
+			//createCooldown('mine', 60);
 		}
 	},
 	// saves your user data to a JSON file in the 'saves' folder
@@ -716,6 +758,12 @@ var commandMap = {
 	'ap' : {
 		'func' : function(cmd){
 			console.log(`\n   Your AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
+		}
+	},
+
+	'colors' : {
+		'func' : function(cmd){
+			console.log('\x1b[31m%s\x1b[0m', '\n   I am red.\n');
 		}
 	}
 };	

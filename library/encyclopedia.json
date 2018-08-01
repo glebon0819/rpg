@@ -30,7 +30,7 @@
 		"val":5,
 		"typ":"beverage",
 		"effects":{
-			"hp":-10
+			"hp":-30
 		}
 	},
 	"6":{
@@ -77,10 +77,10 @@
 	"13":{
 		"nam":"Crusader's Helmet",
 		"val":10,
-		"hp":100,
 		"hpm":100,
-		"typ":"helm",
-		"arm":"5",
+		"typ":"armor",
+		"slt":"helmet",
+		"arm":5,
 		"stats":{
 			"strength":1,
 			"stamina":1
@@ -89,12 +89,24 @@
 	"14":{
 		"nam":"Goblin Coif",
 		"val":3,
-		"hp":50,
-		"hpm":50,
-		"typ":"helm",
-		"arm":"2",
+		"hpm":60,
+		"typ":"armor",
+		"slt":"helmet",
+		"arm":2,
 		"stats":{
-			"agility":1
+			"agility":1,
+			"resilience":1
+		}
+	},
+	"15":{
+		"nam":"Rusty Dagger",
+		"val":3,
+		"hpm":50,
+		"typ":"weapon",
+		"dmg":"15",
+		"stats":{
+			"agility":1,
+			"speed":2
 		}
 	}
 }

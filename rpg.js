@@ -359,6 +359,16 @@ var commandMap = {
 							'Water' : {
 								og : 12,
 								qty : 2
+							},
+							'Rusty Dagger' : {
+								hp : 43,
+								og : 15,
+								qty : 1
+							},
+							'Goblin Coif' : {
+								hp : 52,
+								og : 14,
+								qty : 1
 							}
 						},
 						stats: {
@@ -366,7 +376,7 @@ var commandMap = {
 							stamina : 0,
 							resilience : 0,
 							intellect : 0,
-							luck : 0,
+							speed : 0,
 							agility : 0
 						},
 						cooldowns: {}
@@ -744,26 +754,86 @@ var commandMap = {
 	},
 
 	'health' : {
+		'grp' : 'Stats',
 		'func' : function(cmd){
 			console.log(`\n   Your HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
 		}
 	},
 
 	'hp' : {
+		'grp' : 'Stats',
 		'func' : function(cmd){
 			commandMap['health'].func(cmd);
 		}
 	},
 
 	'ap' : {
+		'grp' : 'Stats',
 		'func' : function(cmd){
 			console.log(`\n   Your AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 		}
 	},
 
+	'inspect' : {
+		'grp' : 'Inventory',
+		'des' : 'Displays an item\'s various qualities.',
+		'func' : function(cmd){
+			cmd.shift();
+			var itm = cmd.join(' ');
+
+			if(isInInv(itm)){
+				var qty = userData.inv[itm].qty;
+				var id = userData.inv[itm].og;
+				var properties = items[id];
+
+				console.log(`   +  Quantity: ${qty}`);
+
+				console.log(`\n   +  Type: ${properties.typ}`);
+
+				console.log(`   +  Value: ${properties.val}`);
+
+				if(properties.typ == 'food' || properties.typ == 'beverage' || properties.typ == 'potion'){
+					console.log('   +  Effects:');
+					if(properties.effects.hp !== undefined){
+						console.log(`      ${properties.effects.hp > 0 ? '+' : '-'}  ${Math.abs(properties.effects.hp)} HP`);
+					}
+					//if(typeof properties.effects.ap !== undefined){
+					if(properties.effects.ap !== undefined){
+						console.log(`      ${properties.effects.ap > 0 ? '+' : '-'}  ${Math.abs(properties.effects.ap)} AP`);
+					}
+				}
+
+				if(properties.typ == 'weapon' || properties.typ == 'armor'){
+
+					console.log(`   ${userData.inv[itm].hp > 0 ? '+' : '-'}  Condition: (${userData.inv[itm].hp}/${properties.hpm})`);
+
+					console.log(`   +  True Value: ${(properties.val * userData.inv[itm].hp) / properties.hpm}`);
+
+					if(properties.typ == 'weapon'){
+						console.log(`   +  Damage: ${properties.dmg}`);
+					}
+					if(properties.typ == 'armor'){
+						console.log(`   +  Armor: ${properties.arm}`);
+						console.log(`   +  Slot: ${properties.slt}`);
+					}
+
+					console.log('   +  Stats:');
+					for(var stat in properties.stats){
+						console.log(`      ${properties.stats[stat] > 0 ? '+' : '-'}  ${Math.abs(properties.stats[stat])} ${stat}`);
+					}
+				}
+
+				console.log();
+			}
+			else{
+				console.log('\n   That item could not be found in your inventory.\n');
+			}
+		}
+	},
+
 	'colors' : {
 		'func' : function(cmd){
-			console.log('\x1b[31m%s\x1b[0m', '\n   I am red.\n');
+			console.log('\x1b[5m%s\x1b[0m', '\n   I am red.\n');
 		}
 	}
 };	

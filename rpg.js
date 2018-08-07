@@ -199,11 +199,11 @@ function checkCooldown(cmd){
 }
 
 // creates a buff, which is a temporary boost in stats
-function createBuff(stat, pts, sec){
+function createBuff(stat, pts, sec, src){
 
 	// adds a buff to the userData
 	var id = getTimestamp(true);
-	userData.buffs[id] = { stat : stat, pts : pts, dur : sec };
+	userData.buffs[id] = { stat : stat, pts : pts, dur : sec, src : src };
 	userData.stats[stat] += parseInt(pts);
 
 	// creates a timer to remove the buff
@@ -278,7 +278,7 @@ function consume(itm){
 	var id = userData.inv[itm].og;
 
 	var itemBuffs = items[id].buffs;
-	if(itemBuffs !== undefined && itemBuffs.length !== 0){
+	if(itemBuffs !== undefined && Object.keys(itemBuffs).length > 0){
 		var userBuffCount = {};
 		var itemBuffCount = {};
 
@@ -309,7 +309,7 @@ function consume(itm){
 		}
 
 		for(var buff in itemBuffs){
-			createBuff(buff, itemBuffs[buff].pts, itemBuffs[buff].dur);
+			createBuff(buff, itemBuffs[buff].pts, itemBuffs[buff].dur, itm);
 		}
 	}
 
@@ -965,7 +965,7 @@ var commandMap = {
 				}
 			}
 			else{
-				console.log('\n   No command provided.\n')
+				console.log('\n   No command provided.\n');
 			}
 		}
 	},
@@ -978,8 +978,19 @@ var commandMap = {
 
 	// displays list of current buffs, their stats and their additional points
 	'buffs' : {
+		'grp' : 'Stats',
+		'des' : '- Displays a list of your current buffs.',
 		'func' : function(cmd){
-
+			if(Object.keys(userData.buffs).length > 0){
+				console.log();
+				for(var buff in userData.buffs){
+					console.log(`   +  '${userData.buffs[buff].src}': ${userData.buffs[buff].pts} ${userData.buffs[buff].stat}`);
+				}
+				console.log();
+			}
+			else{
+				console.log('\n   You currently have no buffs.\n')
+			}
 		}
 	}
 };	

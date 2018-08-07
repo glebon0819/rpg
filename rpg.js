@@ -1,10 +1,12 @@
 const readline = require('readline');
 const fs = require('fs');
 
-var userData = {cooldowns : {}};
+var userData = {};
 var items = {};
 var monsters = {};
 var modes = {};
+
+const BUFF_STACK_MAX = 2;
 
 var replenish = null;
 
@@ -56,7 +58,7 @@ function getTimestamp(readable){
 	}
 
 	if(readable){
-		timestamp = (dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + mm2 + ':' + ss);
+		timestamp = (yyyy + '-' + mm + '-' + dd + 'T' + hh + ':' + mm2 + ':' + ss + '.' + mmm + 'Z');
 	}
 	else{
 		timestamp = (dd + mm + yyyy + hh + mm2 + ss + mmm);
@@ -171,7 +173,7 @@ function createCooldown(cmd, sec){
 	// converts seconds to milliseconds
 	var dur = sec * 1000;
 	// add a cooldown to the userData
-	userData.cooldowns[cmd] = {beg : getTimestamp(false), dur : sec};
+	userData.cooldowns[cmd] = { beg : getTimestamp(false), dur : sec };
 	// create a timer to lift the cooldown
 	setTimeout(removeCooldown, dur, cmd);
 }
@@ -185,13 +187,39 @@ function removeCooldown(cmd){
 // returns time left in seconds if there is active cooldown, false if not
 function checkCooldown(cmd){
 	var timeleft = false;
-	Object.keys(userData.cooldowns).forEach(command => {
-		if(command == cmd){
-			timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
-		}
-	});
+	if(userData.cooldowns !== undefined){
+		Object.keys(userData.cooldowns).forEach(command => {
+			if(command == cmd){
+				timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
+			}
+		});
+	}
 
 	return timeleft;
+}
+
+// creates a buff, which is a temporary boost in stats
+function createBuff(stat, pts, sec){
+
+	// adds a buff to the userData
+	var id = getTimestamp(true);
+	userData.buffs[id] = { stat : stat, pts : pts, dur : sec };
+	userData.stats[stat] += parseInt(pts);
+
+	// creates a timer to remove the buff
+	setTimeout(removeBuff, sec * 1000, id);
+
+}
+
+// removes a buff from the userData
+function removeBuff(id){
+
+	// removes additional stat points from the buff
+	userData.stats[userData.buffs[id].stat] -= userData.buffs[id].pts;
+
+	// removes buff from buff object
+	delete userData.buffs[id];
+
 }
 
 // cleans up cooldowns, buffs, etc. that are left over from the last session
@@ -207,6 +235,11 @@ function cleanUp(){
 		else{
 			delete userData.cooldowns[command];
 		}
+	}
+
+	// goes through each buff, restarts them from where they left off
+	for(var buff in userData.buffs){
+		setTimeout(removeBuff, userData.buffs[buff].dur * 1000 - (new Date(userData.gen.sve) - new Date(buff)), buff);
 	}
 
 	// begins replenishing AP again if it is not at max
@@ -243,6 +276,42 @@ function isInInv(itm){
 function consume(itm){
 	// get id of item from inventory and use it to access item's description in encyclopedia
 	var id = userData.inv[itm].og;
+
+	var itemBuffs = items[id].buffs;
+	if(itemBuffs !== undefined && itemBuffs.length !== 0){
+		var userBuffCount = {};
+		var itemBuffCount = {};
+
+		// goes through each buff in user's data and makes sure its stack is not maxed out
+		for(var buff in userData.buffs){
+
+			if(userBuffCount[userData.buffs[buff].stat] !== undefined){
+				userBuffCount[userData.buffs[buff].stat]++;
+			}
+			else{
+				userBuffCount[userData.buffs[buff].stat] = 1;
+			}
+		}
+
+		// goes through each buff an item has and makes sure its consumption would not cause stats to exceed the maximum number allowed
+		for(var buff in itemBuffs){
+			if(itemBuffCount[buff] !== undefined){
+				itemBuffCount[buff]++;
+			}
+			else{
+				itemBuffCount[buff] = 1;
+			}
+
+			// if the number of buffs found for the current stat on the item plus the number of buffs already had by the user for that stat exceeds the maximum allowed, throw error
+			if((itemBuffCount[buff] + userBuffCount[buff]) > BUFF_STACK_MAX){
+				throw `You cannot stack more than ${BUFF_STACK_MAX} buffs for the same stat on top of one another.`;
+			}
+		}
+
+		for(var buff in itemBuffs){
+			createBuff(buff, itemBuffs[buff].pts, itemBuffs[buff].dur);
+		}
+	}
 
 	var effects = items[id].effects;
 	for(var effect in effects){
@@ -289,18 +358,25 @@ function changeHP(val){
 		userData.gen.hp = 0;
 	}
 
-	// if ap is less than max, replenish it
-	/*if(userData.gen.ap < userData.gen.apm && typeof replenish == undefined){
-		// effected by user's resilience stat
-		var replenish = setInterval(changeAP(1), 1000);
-	}*/
-
 	console.log(`   ${(val > 0 ? '+' : '-')}  HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
+
+	if(userData.gen.hp === 0){
+		die();
+	}
 }
 
 // checks if AP is above or equal to a given value
 function checkAP(num){
 	return (userData.gen.ap >= num ? true : false);
+}
+
+// kills the player, resetting their userData and sending them back into start mode
+function die(){
+	userData = {};
+
+	sessionData.mode = 'start';
+
+	console.log('   -  You have died! :(\n')
 }
 
 // maps commands to functions and includes data about commands
@@ -309,6 +385,7 @@ var commandMap = {
 	'new' : {
 		// what command group it belongs to
 		'grp' : 'Profile',
+		'des' : '<profile name> - Creates a new profile, loading default user data and starting your first game.',
 		// expected number of additional inputs
 		'expIn' : 1,
 		// messages to give before the extra inputs
@@ -335,6 +412,7 @@ var commandMap = {
 							nam : username,
 							dat : getTimestamp(true),
 							dt2 : getTimestamp(false),
+							sve : null,
 							lvl : 1,
 							hp : 100,
 							hpm : 100,
@@ -369,6 +447,10 @@ var commandMap = {
 								hp : 52,
 								og : 14,
 								qty : 1
+							},
+							'Agility Potion' : {
+								og : 16,
+								qty : 3
 							}
 						},
 						stats: {
@@ -379,7 +461,8 @@ var commandMap = {
 							speed : 0,
 							agility : 0
 						},
-						cooldowns: {}
+						cooldowns : {},
+						buffs : {}
 					};
 
 					//userData.gen.nam = username;
@@ -398,6 +481,7 @@ var commandMap = {
 	},
 	'profiles' : {
 		'grp' : 'Profile',
+		'des' : '- Displays a list of profiles on your disc.',
 		'func' : function(cmd){
 			var profiles = getSaves();
 			if(profiles.length == 0){
@@ -415,6 +499,7 @@ var commandMap = {
 	// loads user data from a save file
 	'load' : {
 		'grp' : 'Profile',
+		'des' : '<profile name> - Loads the saved game from a profile on disc and resumes your last game.',
 		'func' : function(cmd){
 			cmd.shift();
 			var profileName = cmd.join(' ');
@@ -454,6 +539,7 @@ var commandMap = {
 	// deletes a save profile
 	'delete' : {
 		'grp' : 'Profile',
+		'des' : '<profile name> - Deletes a profile, permanently removing its file from your disc.',
 		'func' : function(cmd){
 			cmd.shift();
 			var profileName = cmd.join(' ');
@@ -487,6 +573,7 @@ var commandMap = {
 	// barfs out a list of all of the commands
 	'commands' : {
 		'grp' : 'Miscellaneous',
+		'des' : '- Displays a list of usable commands.',
 		'func' : function(cmd){
 			console.log(`\n   Commands\n ========================================================\n`);
 			var cmds = Object.keys(commandMap);
@@ -498,6 +585,7 @@ var commandMap = {
 	// shows the user a list of the items in their inventory
 	'inv' : {
 		'grp' : 'Inventory',
+		'des' : '- Displays the contents of your inventory.',
 		'func' : function(cmd){
 			if(Object.keys(userData.inv).length > 0){
 				console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
@@ -515,6 +603,7 @@ var commandMap = {
 	// shows the user a list of the items in their inventory
 	'inventory' : {
 		'grp' : 'Inventory',
+		'des' : '- Displays the contents of your inventory.',
 		'func' : function(cmd){
 			commandMap['inv'].func(cmd);
 		}
@@ -522,6 +611,7 @@ var commandMap = {
 	// drops an item from inventory
 	'drop' : {
 		'grp' : 'Inventory',
+		'des' : '<item in inventory> - Drops an item, permanently removing it from your inventory.',
 		'func' : function(cmd){
 			cmd.shift();
 			var item = cmd.join(' ');
@@ -541,6 +631,7 @@ var commandMap = {
 	// shows the user what stats they have
 	'stats' : {
 		'grp' : 'Stats',
+		'des' : '- Displays your stats.',
 		'func' : function(cmd){
 			var stats = Object.keys(userData.stats);
 			console.log(`\n   ${userData.gen.nam}'s Stats:\n`);
@@ -553,6 +644,7 @@ var commandMap = {
 	// used to assign points to different stats
 	'assign' : {
 		'grp' : 'Stats',
+		'des' : '<number of points> <stat to assign points to> - Assigns unassigned stat points.',
 		'func' : function(cmd){
 			cmd.shift();
 			if(Object.keys(cmd).length === 2){
@@ -590,6 +682,7 @@ var commandMap = {
 	// can be used to consume beverages and potions
 	'drink' : {
 		'grp' : 'Inventory',
+		'des' : '<beverage or potion item in inventory> - Drinks a beverage or potion, giving you any effects it has.',
 		'func' : function(cmd){
 			cmd.shift();
 			var itm = cmd.join(' ');
@@ -601,8 +694,13 @@ var commandMap = {
 					// check if is food
 					if(items[userData.inv[itm].og].typ == 'potion' || items[userData.inv[itm].og].typ == 'beverage'){
 						// consume (which removes it from inventory and applies the buff/effect)
-						console.log(`\n   You drink ${itm}.\n`);
-						consume(itm);
+						try{
+							consume(itm);
+							console.log(`\n   You drank '${itm}'.\n`);
+						}
+						catch(err){
+							console.log(`\n   Failed to drink '${itm}'. ${err}\n`);
+						}
 					}
 					else{
 						console.log('\n   You cannot drink that item.\n');
@@ -611,7 +709,6 @@ var commandMap = {
 				else{
 					console.log(`\n   '${itm}' not found in your inventory.\n`);
 				}
-				//console.log('\n   You eat an apple. HP: (100/100)\n');
 			}
 			else{
 				console.log('\n   No item provided to drink.\n');
@@ -621,6 +718,7 @@ var commandMap = {
 	// can be used to consume food items
 	'eat' : {
 		'grp' : 'Inventory',
+		'des' : '<food item in inventory> - Eats a piece of food, giving you any effects it has.',
 		'func' : function(cmd){
 			cmd.shift();
 			var itm = cmd.join(' ');
@@ -632,8 +730,13 @@ var commandMap = {
 					// check if is food
 					if(items[userData.inv[itm].og].typ == 'food'){
 						// consume (which removes it from inventory and applies the buff/effect)
-						console.log(`\n   You ate ${itm}.\n`);
-						consume(itm);
+						try{
+							consume(itm);
+							console.log(`\n   You ate '${itm}'.\n`);
+						}
+						catch(err){
+							console.log(`\n   Failed to eat '${itm}'. ${err}\n`);
+						}
 					}
 					else{
 						console.log('\n   You cannot eat that item.\n');
@@ -642,7 +745,6 @@ var commandMap = {
 				else{
 					console.log(`\n   '${itm}' not found in your inventory.\n`);
 				}
-				//console.log('\n   You eat an apple. HP: (100/100)\n');
 			}
 			else{
 				console.log('\n   No item provided to eat.\n');
@@ -652,6 +754,7 @@ var commandMap = {
 	// continues your latest battle
 	'adv' : {
 		'grp' : 'Miscellaneous',
+		'des' : '- Begins an adventure.',
 		'func' : function(cmd){
 			console.log('\n   You\'re now on an adventure.\n');
 		}
@@ -659,6 +762,7 @@ var commandMap = {
 	// forages in the local area, adding berries to your inventory
 	'forage' : {
 		'grp' : 'Gathering',
+		'des' : '- Forages in the local area, placing yielded food in your inventory.',
 		'func' : function(cmd){
 			
 			if(checkAP(5)){
@@ -676,6 +780,7 @@ var commandMap = {
 	// fishes in the local area, adding fish to your inventory
 	'fish' : {
 		'grp' : 'Gathering',
+		'des' : '- Fishes in the local area, placing yielded fish in your inventory.',
 		'func' : function(cmd){
 
 			if(checkAP(10)){
@@ -693,6 +798,7 @@ var commandMap = {
 	// chops down in the local area, adding logs to your inventory
 	'chop' : {
 		'grp' : 'Gathering',
+		'des' : '- Chops wood in the local area, placing yielded wood in your inventory.',
 		'func' : function(cmd){
 
 			if(checkAP(20)){
@@ -710,6 +816,7 @@ var commandMap = {
 	// mines down in the local area, adding iron ore to your inventory
 	'mine' : {
 		'grp' : 'Gathering',
+		'des' : '- Mines in the local area, placing yielded ore in your inventory.',
 		'func' : function(cmd){
 
 			if(checkAP(50)){
@@ -727,8 +834,14 @@ var commandMap = {
 	// saves your user data to a JSON file in the 'saves' folder
 	'save' : {
 		'grp' : 'Profile',
+		'des' : '- Saves your current profile data to the disc so you can resume your game later.',
 		'func' : function(cmd){
 			if(Object.keys(userData).length > 0){
+
+				// sets last save value in user data to current time
+				userData.gen.sve = getTimestamp(true);
+
+				// saves user data to disc as a JSON file
 				if(userData.gen.dt2.length > 0){
 					fs.writeFile('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData), function(err) {
 					    if(err){
@@ -739,13 +852,14 @@ var commandMap = {
 				}
 			}
 			else{
-				console.log('\n   Save failed. No profile loaded.\n')
+				console.log('\n   Save failed. No profile loaded.\n');
 			}
 		}
 	},
 	// exits the game
 	'exit' : {
 		'grp' : 'Miscellaneous',
+		'des' : '- Ends your current game and closes the program.',
 		'func' : function(cmd){
 			rl.close();
 			console.log('\n !======================================================!');
@@ -755,6 +869,7 @@ var commandMap = {
 
 	'health' : {
 		'grp' : 'Stats',
+		'des' : '- Displays your HP level.',
 		'func' : function(cmd){
 			console.log(`\n   Your HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
 		}
@@ -762,6 +877,7 @@ var commandMap = {
 
 	'hp' : {
 		'grp' : 'Stats',
+		'des' : '- Displays your HP level.',
 		'func' : function(cmd){
 			commandMap['health'].func(cmd);
 		}
@@ -769,6 +885,7 @@ var commandMap = {
 
 	'ap' : {
 		'grp' : 'Stats',
+		'des' : '- Displays your AP level.',
 		'func' : function(cmd){
 			console.log(`\n   Your AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 		}
@@ -776,7 +893,7 @@ var commandMap = {
 
 	'inspect' : {
 		'grp' : 'Inventory',
-		'des' : 'Displays an item\'s various qualities.',
+		'des' : '<item in inventory> - Displays an item\'s various qualities.',
 		'func' : function(cmd){
 			cmd.shift();
 			var itm = cmd.join(' ');
@@ -831,9 +948,38 @@ var commandMap = {
 		}
 	},
 
+	// displays description of a command
+	'info' : {
+		'grp' : 'Miscellaneous',
+		'des' : '<command> - Displays the description of a command.',
+		'func' : function(cmd){
+			cmd.shift();
+			var command = cmd.join(' ');
+
+			if(command.length > 0){
+				if(cmdExists(command)){
+					console.log(`\n   ${command} ${commandMap[command].des}\n`);
+				}
+				else{
+					console.log(`\n   That command does not exist.\n`);
+				}
+			}
+			else{
+				console.log('\n   No command provided.\n')
+			}
+		}
+	},
+
 	'colors' : {
 		'func' : function(cmd){
 			console.log('\x1b[5m%s\x1b[0m', '\n   I am red.\n');
+		}
+	},
+
+	// displays list of current buffs, their stats and their additional points
+	'buffs' : {
+		'func' : function(cmd){
+
 		}
 	}
 };	

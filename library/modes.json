@@ -7,7 +7,8 @@
 			"3":"commands",
 			"4":"exit",
 			"5":"delete",
-			"6":"profiles"
+			"6":"profiles",
+			"7":"info"
 		},
 		"black":{}
 	},
@@ -25,5 +26,11 @@
 			"2":"buy"
 		},
 		"black":{}
+	},
+	"adventure":{
+		"white":{},
+		"black":{
+			"0":"save"
+		}
 	}
 }

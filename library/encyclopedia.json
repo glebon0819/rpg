@@ -30,7 +30,7 @@
 		"val":5,
 		"typ":"beverage",
 		"effects":{
-			"hp":-30
+			"hp":-100
 		}
 	},
 	"6":{
@@ -107,6 +107,17 @@
 		"stats":{
 			"agility":1,
 			"speed":2
+		}
+	},
+	"16":{
+		"nam":"Agility Potion",
+		"val":10,
+		"typ":"potion",
+		"buffs":{
+			"agility":{
+				"pts":"1",
+				"dur":"30"
+			}
 		}
 	}
 }

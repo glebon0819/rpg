@@ -103,6 +103,7 @@
 		"val":3,
 		"hpm":50,
 		"typ":"weapon",
+		"slt":"weapon",
 		"dmg":"15",
 		"stats":{
 			"agility":1,

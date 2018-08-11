@@ -1,12 +1,11 @@
 const readline = require('readline');
 const fs = require('fs');
 
-var userData = {};
-var items = {};
-var monsters = {};
-var modes = {};
-
-const BUFF_STACK_MAX = 2;
+var userData = {},
+	items = {},
+	monsters = {},
+	modes = {},
+	config = {};
 
 var replenish = null;
 
@@ -74,6 +73,7 @@ function loadResources(){
 	monsters = JSON.parse(bestiary);
 	var gamemodes = fs.readFileSync('./library/modes.json', 'utf8');
 	modes = JSON.parse(gamemodes);
+	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
 }
 
 // function for retrieving saves from the save folder
@@ -303,8 +303,8 @@ function consume(itm){
 			}
 
 			// if the number of buffs found for the current stat on the item plus the number of buffs already had by the user for that stat exceeds the maximum allowed, throw error
-			if((itemBuffCount[buff] + userBuffCount[buff]) > BUFF_STACK_MAX){
-				throw `You cannot stack more than ${BUFF_STACK_MAX} buffs for the same stat on top of one another.`;
+			if((itemBuffCount[buff] + userBuffCount[buff]) > config.BUFF_STACK_MAX){
+				throw `You cannot stack more than ${config.BUFF_STACK_MAX} buffs for the same stat on top of one another.`;
 			}
 		}
 
@@ -379,6 +379,19 @@ function die(){
 	console.log('   -  You have died! :(\n')
 }
 
+// adds item to player's equipment, removing it from their inventory
+function equip(nam, og){
+	// checks that the max number of items for this slot will not be surpassed
+	if(Object.keys(userData.equipment[items[og].slt]).length < config[items[og].slt].ITEM_COUNT_MAX){
+		userData.equipment[items[og].slt][nam] = og;
+	
+		remFromInv(nam, 1);
+	}
+	else{
+		throw `Number of items allowed in your ${items[og].slt} slot has been reached. Unequip an item in that slot to free up room.`;
+	}
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -446,7 +459,7 @@ var commandMap = {
 							'Goblin Coif' : {
 								hp : 52,
 								og : 14,
-								qty : 1
+								qty : 2
 							},
 							'Agility Potion' : {
 								og : 16,
@@ -460,6 +473,14 @@ var commandMap = {
 							intellect : 0,
 							speed : 0,
 							agility : 0
+						},
+						equipment : {
+							helmet : {},
+							chest : {},
+							pants : {},
+							boots : {},
+							weapon : {},
+							ring : {}
 						},
 						cooldowns : {},
 						buffs : {}
@@ -525,7 +546,7 @@ var commandMap = {
 					// clean up cooldowns, buffs, etc. left over from last session
 					cleanUp();
 
-					console.log(`\n   Welcome back, ${userData.gen.nam}!\n`)
+					console.log(`\n   Welcome back, ${userData.gen.nam}!\n`);
 				}
 				else{
 					console.log(`\n   Could not locate profile "${profileName}".\n`);
@@ -989,8 +1010,53 @@ var commandMap = {
 				console.log();
 			}
 			else{
-				console.log('\n   You currently have no buffs.\n')
+				console.log('\n   You currently have no buffs.\n');
 			}
+		}
+	},
+
+	// removes an item from the player inventory, adding it to the appropriate equipment slot
+	'equip' : {
+		'grp' : 'Equipment',
+		'func' : function(cmd){
+			cmd.shift();
+			var item = cmd.join(' ');
+
+			if(item.length > 0){
+				// checks that the item given exists in the user's inventory
+				if(isInInv(item)){
+					// checks that the item is equippable
+					if(items[userData.inv[item].og].slt !== undefined){
+						try{
+							equip(item, userData.inv[item].og);
+							console.log(`\n   '${item}' equipped.\n`);
+						}
+						catch(err){
+							console.log(`\n   Item could not be equipped. ${err}\n`);
+						}
+					}
+					else{
+						console.log('\n   That item cannot be equipped.\n');
+					}
+				}
+				else{
+					console.log(`\n   That item could not be found in your inventory.\n`);
+				}
+			}
+			else{
+				console.log('\n   No item provided to equip.\n');
+			}
+		}
+	},
+
+	// displays the contents of the player's inventory
+	'equipment' : {
+		'grp' : 'Equipment',
+		'func' : function(cmd){
+			/*for(var slot in userData.equipment){
+
+			}*/
+			console.log(userData.equipment);
 		}
 	}
 };	

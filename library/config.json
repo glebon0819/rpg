@@ -1,21 +1,24 @@
 {
+	"LEVEL_CAP":10,
 	"BUFF_STACK_MAX":2,
-	"helmet":{
-		"ITEM_COUNT_MAX":1
-	},
-	"chest":{
-		"ITEM_COUNT_MAX":1
-	},
-	"pants":{
-		"ITEM_COUNT_MAX":1
-	},
-	"boots":{
-		"ITEM_COUNT_MAX":1
-	},
-	"weapon":{
-		"ITEM_COUNT_MAX":1
-	},
-	"ring":{
-		"ITEM_COUNT_MAX":2
+	"equipment":{
+		"helmet":{
+			"ITEM_COUNT_MAX":1
+		},
+		"chest":{
+			"ITEM_COUNT_MAX":1
+		},
+		"pants":{
+			"ITEM_COUNT_MAX":1
+		},
+		"boots":{
+			"ITEM_COUNT_MAX":1
+		},
+		"weapon":{
+			"ITEM_COUNT_MAX":1
+		},
+		"ring":{
+			"ITEM_COUNT_MAX":2
+		}
 	}
 }

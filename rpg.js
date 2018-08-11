@@ -382,8 +382,14 @@ function die(){
 // adds item to player's equipment, removing it from their inventory
 function equip(nam, og){
 	// checks that the max number of items for this slot will not be surpassed
-	if(Object.keys(userData.equipment[items[og].slt]).length < config[items[og].slt].ITEM_COUNT_MAX){
+	if(Object.keys(userData.equipment[items[og].slt]).length < config.equipment[items[og].slt].ITEM_COUNT_MAX){
+		// adds the item to the appropriate equipment slot
 		userData.equipment[items[og].slt][nam] = og;
+
+		// goes through each of the item's stat increases and boosts the user's stats
+		for(var stat in items[og].stats){
+			userData.stats[stat] += items[og].stats[stat];
+		}
 	
 		remFromInv(nam, 1);
 	}

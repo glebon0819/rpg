@@ -91,7 +91,7 @@ function getSaves(){
 }
 
 // function that adds an item to player inventory
-function addToInv(itm, num, qty, typ){
+function addToInv(itm, num, qty, ech){
 	// get inventory items
 	var inv = Object.keys(userData.inv);
 	var match = false;
@@ -105,11 +105,13 @@ function addToInv(itm, num, qty, typ){
 	if(match){
 		userData.inv[itm].qty = userData.inv[itm].qty + qty;
 	}else{
-		userData.inv[itm] = {typ: typ, og : num, qty : qty};
+		userData.inv[itm] = { og : num, qty : qty };
 	}
 
-	// print to screen message notifying player that an item was added to their inventory
-	console.log(`\n   ${qty} x '${itm}' added to inventory.\n`);
+	// prints to screen message notifying player that an item was added to their inventory if the echo condition is true
+	if(ech === true){
+		console.log(`\n   ${qty} x '${itm}' added to inventory.\n`);
+	}
 }
 
 // function that removes an item from player inventory
@@ -391,11 +393,24 @@ function equip(nam, og){
 			userData.stats[stat] += items[og].stats[stat];
 		}
 	
+		// removes the item from player inventory
 		remFromInv(nam, 1);
 	}
 	else{
 		throw `Number of items allowed in your ${items[og].slt} slot has been reached. Unequip an item in that slot to free up room.`;
 	}
+}
+
+// removes an item from player's equipment, adding it to their inventory and removing any stat increases
+function unequip(nam, og){
+	addToInv(nam, og, 1);
+
+	// goes through each of the item's stat increases and reduces the user's stats
+	for(var stat in items[og].stats){
+		userData.stats[stat] -= items[og].stats[stat];
+	}
+
+	delete userData.equipment[items[og].slt][nam];
 }
 
 // maps commands to functions and includes data about commands
@@ -498,7 +513,7 @@ var commandMap = {
 
 				}
 				else{
-					console.log('\n   That username is unavailable.\n')
+					console.log('\n   That username is unavailable.\n');
 				}
 			}
 			else {
@@ -793,7 +808,7 @@ var commandMap = {
 		'func' : function(cmd){
 			
 			if(checkAP(5)){
-				addToInv('Berries', 6, 2);
+				addToInv('Berries', 6, 2, true);
 				changeAP(-5);
 			}
 			else{
@@ -811,7 +826,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(10)){
-				addToInv('Fish', 3, 1);
+				addToInv('Fish', 3, 1, true);
 				changeAP(-10);
 			}
 			else{
@@ -829,7 +844,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(20)){
-				addToInv('Log', 2, 1);
+				addToInv('Log', 2, 1, true);
 				changeAP(-20);
 			}
 			else{
@@ -847,7 +862,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(50)){
-				addToInv('Iron Ore', 4, 1);
+				addToInv('Iron Ore', 4, 1, true);
 				changeAP(-50);
 			}
 			else{
@@ -932,7 +947,7 @@ var commandMap = {
 
 				console.log(`   +  Quantity: ${qty}`);
 
-				console.log(`\n   +  Type: ${properties.typ}`);
+				console.log(`   +  Type: ${properties.typ}`);
 
 				console.log(`   +  Value: ${properties.val}`);
 
@@ -1024,6 +1039,7 @@ var commandMap = {
 	// removes an item from the player inventory, adding it to the appropriate equipment slot
 	'equip' : {
 		'grp' : 'Equipment',
+		'des' : '<equippable item in inventory> - Removes an item from your inventory, adding it to your equipment in the appropriate slot.',
 		'func' : function(cmd){
 			cmd.shift();
 			var item = cmd.join(' ');
@@ -1055,9 +1071,38 @@ var commandMap = {
 		}
 	},
 
+	'unequip' : {
+		'grp' : 'Equipment',
+		'des' : '<currently equipped item> - Removes an item from your equipment, adding it to your inventory.',
+		'func' : function(cmd){
+			cmd.shift();
+			var item = cmd.join(' ');
+
+			if(item.length > 0){
+				// get original id number, throw exception if cannot be found
+				for(var slot in userData.equipment){
+					for(var itm in userData.equipment[slot]){
+						if(itm == item){
+							var og = userData.equipment[slot][itm];
+						}
+					}
+				}
+
+				if(og !== undefined){
+					unequip(item, og);
+					console.log(`\n   '${item}' removed from your equipment.\n`);
+				}
+				else{
+					console.log('\n   Item could not be unequipped. Item could not be found in your equipment.\n');
+				}
+			}
+		}
+	},
+
 	// displays the contents of the player's inventory
 	'equipment' : {
 		'grp' : 'Equipment',
+		'des' : '- Displays the contents of your inventory.',
 		'func' : function(cmd){
 			/*for(var slot in userData.equipment){
 

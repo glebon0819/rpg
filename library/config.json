@@ -1,6 +1,23 @@
 {
-	"LEVEL_CAP":10,
 	"BUFF_STACK_MAX":2,
+	"levels":{
+		"LEVEL_CAP":10,
+		"1":{
+			"XP_CAP":"100"
+		},
+		"2":{
+			"XP_CAP":"200"
+		},
+		"3":{
+			"XP_CAP":"400"
+		},
+		"4":{
+			"XP_CAP":"800"
+		},
+		"5":{
+			"XP_CAP":"1600"
+		}
+	},
 	"equipment":{
 		"helmet":{
 			"ITEM_COUNT_MAX":1

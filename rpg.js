@@ -473,12 +473,10 @@ var commandMap = {
 								qty : 2
 							},
 							'Rusty Dagger' : {
-								hp : 43,
 								og : 15,
 								qty : 1
 							},
 							'Goblin Coif' : {
-								hp : 52,
 								og : 14,
 								qty : 2
 							},
@@ -625,7 +623,7 @@ var commandMap = {
 		}
 	},
 	// shows the user a list of the items in their inventory
-	'inv' : {
+	'inventory' : {
 		'grp' : 'Inventory',
 		'des' : '- Displays the contents of your inventory.',
 		'func' : function(cmd){
@@ -633,21 +631,21 @@ var commandMap = {
 				console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
 				var items = Object.keys(userData.inv);
 				items.forEach(item => {
-					console.log('   ' + userData.inv[item].qty + ` x ${item}\n`);
+					console.log('   ' + userData.inv[item].qty + ` x ${item}`);
 				});
-				console.log(' ========================================================\n');
+				console.log('\n ========================================================\n');
 			}
 			else{
 				console.log('\n   Your inventory is empty.\n');
 			}
 		}
 	},
-	// shows the user a list of the items in their inventory
-	'inventory' : {
+	// shorthand version of 'inventory'
+	'inv' : {
 		'grp' : 'Inventory',
-		'des' : '- Displays the contents of your inventory.',
+		'des' : '- See \'inventory\'.',
 		'func' : function(cmd){
-			commandMap['inv'].func(cmd);
+			commandMap['inventory'].func(cmd);
 		}
 	},
 	// drops an item from inventory
@@ -718,7 +716,14 @@ var commandMap = {
 	'me' : {
 		'grp' : 'Miscellaneous',
 		'func' : function(cmd){
+			console.log(`
+   ${userData.gen.nam}:
 
+   +  Level: ${userData.gen.lvl}
+   +  XP: ${userData.gen.exp}/${config.levels[userData.gen.lvl].XP_CAP}
+   +  Gold: ${userData.gen.gld}
+   +  Unassigned stat points: ${userData.gen.poi}
+				`);
 		}
 	},
 	// can be used to consume beverages and potions
@@ -945,7 +950,7 @@ var commandMap = {
 				var id = userData.inv[itm].og;
 				var properties = items[id];
 
-				console.log(`   +  Quantity: ${qty}`);
+				console.log(`\n   +  Quantity: ${qty}`);
 
 				console.log(`   +  Type: ${properties.typ}`);
 
@@ -964,9 +969,9 @@ var commandMap = {
 
 				if(properties.typ == 'weapon' || properties.typ == 'armor'){
 
-					console.log(`   ${userData.inv[itm].hp > 0 ? '+' : '-'}  Condition: (${userData.inv[itm].hp}/${properties.hpm})`);
+					//console.log(`   ${userData.inv[itm].hp > 0 ? '+' : '-'}  Condition: (${userData.inv[itm].hp}/${properties.hpm})`);
 
-					console.log(`   +  True Value: ${(properties.val * userData.inv[itm].hp) / properties.hpm}`);
+					//console.log(`   +  True Value: ${(properties.val * userData.inv[itm].hp) / properties.hpm}`);
 
 					if(properties.typ == 'weapon'){
 						console.log(`   +  Damage: ${properties.dmg}`);
@@ -1108,6 +1113,15 @@ var commandMap = {
 
 			}*/
 			console.log(userData.equipment);
+		}
+	},
+
+	// make a shorter alternate name for 'equipment'
+	'eqp' : {
+		'grp' : 'Equipment',
+		'des' : '- See \'equipment\'.',
+		'func' : function(cmd){
+			commandMap['equipment'].func(cmd);
 		}
 	}
 };	

@@ -1,0 +1,10 @@
+{
+	"Xymborex":{
+		"Dysphoria":{
+			"typ":"city",
+			"min":false,
+			"chp":false,
+			"mrk":true
+		}
+	}
+}

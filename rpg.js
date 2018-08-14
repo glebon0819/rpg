@@ -4,7 +4,6 @@ const fs = require('fs');
 var userData = {},
 	items = {},
 	monsters = {},
-	modes = {},
 	config = {};
 
 var replenish = null;
@@ -67,12 +66,8 @@ function getTimestamp(readable){
 
 // function that loads the library files
 function loadResources(){
-	var encyclopedia = fs.readFileSync('./library/encyclopedia.json', 'utf8');
-	items = JSON.parse(encyclopedia);
-	var bestiary = fs.readFileSync('./library/bestiary.json', 'utf8');
-	monsters = JSON.parse(bestiary);
-	var gamemodes = fs.readFileSync('./library/modes.json', 'utf8');
-	modes = JSON.parse(gamemodes);
+	items = JSON.parse(fs.readFileSync('./library/encyclopedia.json', 'utf8'));
+	monsters = JSON.parse(fs.readFileSync('./library/bestiary.json', 'utf8'));
 	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
 }
 
@@ -153,17 +148,17 @@ function cmdExists(cmd){
 function checkMode(cmd){
 	var allowed = false;
 	// if whitelist is defined, use that. else, use blacklist
-	if(Object.keys(modes[sessionData.mode].white).length > 0){
-		for(var commandKey in modes[sessionData.mode].white){
-			if(modes[sessionData.mode].white[commandKey] == cmd){
+	if(Object.keys(config.modes[sessionData.mode].white).length > 0){
+		for(var commandKey in config.modes[sessionData.mode].white){
+			if(config.modes[sessionData.mode].white[commandKey] == cmd){
 				allowed = true;
 			}
 		}
 	}
 	else{
 		allowed = true;
-		for(var commandKey in modes[sessionData.mode].black){
-			if(modes[sessionData.mode].black[commandKey] == cmd){
+		for(var commandKey in config.modes[sessionData.mode].black){
+			if(config.modes[sessionData.mode].black[commandKey] == cmd){
 				allowed = false;
 			}
 		}
@@ -315,6 +310,8 @@ function consume(itm){
 		}
 	}
 
+	remFromInv(itm, 1);
+
 	var effects = items[id].effects;
 	for(var effect in effects){
 		if(effect == 'hp'){
@@ -324,8 +321,6 @@ function consume(itm){
 			changeAP(effects[effect]);
 		}
 	}
-
-	remFromInv(itm, 1);
 }
 
 function changeAP(val){
@@ -374,11 +369,22 @@ function checkAP(num){
 
 // kills the player, resetting their userData and sending them back into start mode
 function die(){
+	// retrieve their last save, autoincrement their death stat, then resave it
+	var data = JSON.parse(fs.readFileSync('./saves/' + userData.gen.dt2 + '.json', 'utf8'));
+	userData = data;
+	userData.gen.dth++;
+	//commandMap['save'].func();
+	fs.writeFile('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData), function(err) {
+	    if(err){
+	    	console.log(err);
+	    }
+	});
+
 	userData = {};
 
 	sessionData.mode = 'start';
 
-	console.log('   -  You have died! :(\n')
+	console.log('   -  You have died! :(\n');
 }
 
 // adds item to player's equipment, removing it from their inventory
@@ -507,7 +513,9 @@ var commandMap = {
 
 					//userData.gen.nam = username;
 					sessionData.mode = 'general';
-					console.log(`\n   Welcome, ${userData.gen.nam}!\n   Your profile was created at ${userData.gen.dat}.\n`);
+					console.log(`\n   Welcome, ${userData.gen.nam}!\n   Your profile was created at ${userData.gen.dat}.`);
+
+					commandMap['me'].func();
 
 				}
 				else{
@@ -519,6 +527,7 @@ var commandMap = {
 			}
 		}
 	},
+	// displays a list of save profiles on the player's disk
 	'profiles' : {
 		'grp' : 'Profile',
 		'des' : '- Displays a list of profiles on your disc.',
@@ -565,7 +574,9 @@ var commandMap = {
 					// clean up cooldowns, buffs, etc. left over from last session
 					cleanUp();
 
-					console.log(`\n   Welcome back, ${userData.gen.nam}!\n`);
+					console.log(`\n   Welcome back, ${userData.gen.nam}!`);
+
+					commandMap['me'].func();
 				}
 				else{
 					console.log(`\n   Could not locate profile "${profileName}".\n`);
@@ -742,11 +753,11 @@ var commandMap = {
 					if(items[userData.inv[itm].og].typ == 'potion' || items[userData.inv[itm].og].typ == 'beverage'){
 						// consume (which removes it from inventory and applies the buff/effect)
 						try{
+							console.log(`\n   You drink '${itm}'.\n`);
 							consume(itm);
-							console.log(`\n   You drank '${itm}'.\n`);
 						}
 						catch(err){
-							console.log(`\n   Failed to drink '${itm}'. ${err}\n`);
+							console.log(`   Failed to drink '${itm}'. ${err}\n`);
 						}
 					}
 					else{

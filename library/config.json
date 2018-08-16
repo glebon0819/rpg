@@ -20,7 +20,7 @@
 	},
 	"equipment":{
 		"helmet":{
-			"ITEM_COUNT_MAX":1
+			"ITEM_COUNT_MAX":2
 		},
 		"chest":{
 			"ITEM_COUNT_MAX":1

@@ -427,7 +427,13 @@ function unequip(nam, og){
 		userData.stats[stat] -= items[og].stats[stat];
 	}
 
-	delete userData.equipment[items[og].slt][nam];
+	//delete userData.equipment[items[og].slt][nam];
+	if(userData.equipment[items[og].slt][nam].qty > 1){
+		userData.equipment[items[og].slt][nam].qty--;
+	}
+	else{
+		delete userData.equipment[items[og].slt][nam];
+	}
 }
 
 // returns the slot an item is in if an item is equipped, false if not
@@ -1129,10 +1135,18 @@ var commandMap = {
 
 			if(item.length > 0){
 				// get original id number, throw exception if cannot be found
-				for(var slot in userData.equipment){
+				/*for(var slot in userData.equipment){
 					for(var itm in userData.equipment[slot]){
 						if(itm == item){
-							var og = userData.equipment[slot][itm];
+							var og = userData.equipment[slot][itm].og;
+						}
+					}
+				}*/
+				if(isInEqp(item)){
+					var slot = isInEqp(item);
+					for(var itm in userData.equipment[slot]){
+						if(itm == item){
+							var og = userData.equipment[slot][itm].og;
 						}
 					}
 				}

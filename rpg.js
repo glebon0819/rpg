@@ -390,9 +390,20 @@ function die(){
 // adds item to player's equipment, removing it from their inventory
 function equip(nam, og){
 	// checks that the max number of items for this slot will not be surpassed
-	if(Object.keys(userData.equipment[items[og].slt]).length < config.equipment[items[og].slt].ITEM_COUNT_MAX){
+	var item_count = 0;
+	for(var item in userData.equipment[items[og].slt]){
+		item_count += userData.equipment[items[og].slt][item].qty;
+	}
+
+	//if(Object.keys(userData.equipment[items[og].slt]).length < config.equipment[items[og].slt].ITEM_COUNT_MAX){
+	if(item_count < config.equipment[items[og].slt].ITEM_COUNT_MAX){
 		// adds the item to the appropriate equipment slot
-		userData.equipment[items[og].slt][nam] = og;
+		if(userData.equipment[items[og].slt][nam] === undefined){
+			userData.equipment[items[og].slt][nam] = { og : og, qty : 1 };
+		}
+		else{
+			userData.equipment[items[og].slt][nam].qty++;
+		}
 
 		// goes through each of the item's stat increases and boosts the user's stats
 		for(var stat in items[og].stats){
@@ -417,6 +428,19 @@ function unequip(nam, og){
 	}
 
 	delete userData.equipment[items[og].slt][nam];
+}
+
+// returns the slot an item is in if an item is equipped, false if not
+function isInEqp(itm){
+	var isInEqp = false;
+	Object.keys(userData.equipment).forEach(slot => {
+		for(var item in userData.equipment[slot]){
+			if(item == itm){
+				isInEqp = slot;
+			}
+		}
+	});
+	return isInEqp;
 }
 
 // maps commands to functions and includes data about commands
@@ -484,7 +508,7 @@ var commandMap = {
 							},
 							'Goblin Coif' : {
 								og : 14,
-								qty : 2
+								qty : 3
 							},
 							'Agility Potion' : {
 								og : 16,
@@ -956,9 +980,18 @@ var commandMap = {
 			cmd.shift();
 			var itm = cmd.join(' ');
 
-			if(isInInv(itm)){
-				var qty = userData.inv[itm].qty;
-				var id = userData.inv[itm].og;
+			if(isInEqp(itm) !== false || isInInv(itm)){
+				var qty = 0;
+
+				if(isInEqp(itm) !== false){
+					qty = userData.equipment[isInEqp(itm)][itm].qty;
+					var id = userData.equipment[isInEqp(itm)][itm].og;
+				}
+				if(isInInv(itm)){
+					qty += userData.inv[itm].qty;
+					var id = userData.inv[itm].og;
+				}
+
 				var properties = items[id];
 
 				console.log(`\n   +  Quantity: ${qty}`);

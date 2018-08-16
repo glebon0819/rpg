@@ -1167,10 +1167,14 @@ var commandMap = {
 		'grp' : 'Equipment',
 		'des' : '- Displays the contents of your inventory.',
 		'func' : function(cmd){
-			/*for(var slot in userData.equipment){
-
-			}*/
-			console.log(userData.equipment);
+			console.log();
+			for(var slot in userData.equipment){
+				console.log(`   ${slot}:`);
+				for(var itm in userData.equipment[slot]){
+					console.log(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
+				}
+			}
+			console.log();
 		}
 	},
 

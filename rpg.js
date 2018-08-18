@@ -1,4 +1,4 @@
-const readline = require('readline');
+const readlineSync = require('readline-sync');
 const fs = require('fs');
 
 var userData = {},
@@ -7,11 +7,6 @@ var userData = {},
 	config = {};
 
 var replenish = null;
-
-const rl = readline.createInterface({
-	input: process.stdin,
-	output: process.stdout
-});
 
 var sessionData = {
 	// keeps track of how many lines the user has entered
@@ -949,7 +944,6 @@ var commandMap = {
 		'grp' : 'Miscellaneous',
 		'des' : '- Ends your current game and closes the program.',
 		'func' : function(cmd){
-			rl.close();
 			console.log('\n !======================================================!');
 			process.exit(0);
 		}
@@ -1200,58 +1194,57 @@ function run(){
 		console.log('   For help, use \'commands\' to display a list of\n   commands that can be used in the game.\n');
 	}
 
-	rl.question(' ', (command) => {
+	var command = readlineSync.question(' ');
 
-		//check if last command's expected additional inputs have been met
-		/*if(sessionData.linesSince < commandMap[sessionData.lastCmd].expIn){
+	//check if last command's expected additional inputs have been met
+	/*if(sessionData.linesSince < commandMap[sessionData.lastCmd].expIn){
 
-		}*/
+	}*/
 
-		var commands = command.split(' ');
+	var commands = command.split(' ');
 
-		var root_command = commands[0];
-		//commandMap[root_command].func(commands);
+	var root_command = commands[0];
+	//commandMap[root_command].func(commands);
 
-		// check if root_command is an actual command
-		if(cmdExists(root_command)){
+	// check if root_command is an actual command
+	if(cmdExists(root_command)){
 
-			// check if the command is allowed in the current mode
-			if(checkMode(root_command)){
+		// check if the command is allowed in the current mode
+		if(checkMode(root_command)){
 
-				// check for cooldown on command
-				var hasCooldown = checkCooldown(root_command);
-				if(hasCooldown === false){
+			// check for cooldown on command
+			var hasCooldown = checkCooldown(root_command);
+			if(hasCooldown === false){
 
-					// if none of the above, run command
-					commandMap[root_command].func(commands);
-					sessionData.lastCmd = root_command;
-				}
-				else{
-					var unit = 'seconds';
-					if(hasCooldown > 3599){
-						hasCooldown = Math.floor(hasCooldown / 3600);
-						unit = 'hours';
-					}
-					else if(hasCooldown > 59){
-						hasCooldown = Math.floor(hasCooldown / 60);
-						unit = 'minutes';
-					}
-					console.log(`\n   That command is not ready yet. ${hasCooldown} ${unit} left until ready.\n`);
-				}
+				// if none of the above, run command
+				commandMap[root_command].func(commands);
+				sessionData.lastCmd = root_command;
 			}
 			else{
-				console.log('\n   That command is not allowed right now. Create or load a profile, then try again.\n');
+				var unit = 'seconds';
+				if(hasCooldown > 3599){
+					hasCooldown = Math.floor(hasCooldown / 3600);
+					unit = 'hours';
+				}
+				else if(hasCooldown > 59){
+					hasCooldown = Math.floor(hasCooldown / 60);
+					unit = 'minutes';
+				}
+				console.log(`\n   That command is not ready yet. ${hasCooldown} ${unit} left until ready.\n`);
 			}
 		}
 		else{
-			console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
-			sessionData.linesSince++;
+			console.log('\n   That command is not allowed right now. Create or load a profile, then try again.\n');
 		}
+	}
+	else{
+		console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
+		sessionData.linesSince++;
+	}
 
-		sessionData.cycle++;
+	sessionData.cycle++;
 
-		run();
-	});
+	run();
 }
 
 run();

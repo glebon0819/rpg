@@ -369,11 +369,7 @@ function die(){
 	userData = data;
 	userData.gen.dth++;
 	//commandMap['save'].func();
-	fs.writeFile('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData), function(err) {
-	    if(err){
-	    	console.log(err);
-	    }
-	});
+	fs.writeFileSync('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData));
 
 	userData = {};
 
@@ -632,10 +628,12 @@ var commandMap = {
 				});
 
 				if(filename.length > 0){
-					fs.unlink('./saves/' + filename, (err) => {
+					/*fs.unlink('./saves/' + filename, (err) => {
 						if (err) throw err;
 						console.log(`\n   ${profileName} was deleted.\n`);
-					});
+					});*/
+					fs.unlink('./saves/' + filename);
+					console.log(`\n   ${profileName} was deleted.\n`);
 				}
 				else{
 					console.log(`\n   Could not locate profile "${profileName}".\n`);
@@ -926,12 +924,8 @@ var commandMap = {
 
 				// saves user data to disc as a JSON file
 				if(userData.gen.dt2.length > 0){
-					fs.writeFile('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData), function(err) {
-					    if(err){
-					    	console.log(err);
-					    }
-					    console.log('\n   Your progress was saved.\n');
-					});
+					fs.writeFileSync('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData));
+					console.log('\n   Your progress was saved.\n');
 				}
 			}
 			else{

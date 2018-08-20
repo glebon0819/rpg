@@ -63,6 +63,7 @@ function getTimestamp(readable){
 function loadResources(){
 	items = JSON.parse(fs.readFileSync('./library/encyclopedia.json', 'utf8'));
 	monsters = JSON.parse(fs.readFileSync('./library/bestiary.json', 'utf8'));
+	locations = JSON.parse(fs.readFileSync('./library/atlas.json', 'utf8'));
 	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
 }
 
@@ -440,6 +441,34 @@ function isInEqp(itm){
 	return isInEqp;
 }
 
+// logs strings to the console while maintaining the predefined character width of the game
+function echo(string){
+	var lastI = 0;
+	var end;
+	for(var i = 0; i < Math.ceil(string.length / 54); i++){
+		var endFound = false;
+		var char;
+		end = lastI + 53;
+		while(!endFound){
+			if(end === lastI){
+				endFound = true;
+				end = lastI + 53;
+			}
+			else{
+				char = string.charAt(end);
+				if(char === ' ' || end === string.length){
+					endFound = true;
+				}
+				else{
+					end--;
+				}
+			}
+		}
+		console.log(`   ${string.substring(lastI, end).trim()}`);
+		lastI = end;
+	}
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -475,15 +504,23 @@ var commandMap = {
 							dt2 : getTimestamp(false),
 							sve : null,
 							lvl : 1,
+							// current number of hit points
 							hp : 100,
+							// max number of hit points
 							hpm : 100,
+							// current number of action points
 							ap : 100,
+							// max number of action points
 							apm : 100,
+							// current number of experience points
 							exp : 0,
 							gld : 5,
 							slv : 50,
+							// number of overall monster kills
 							kll : 0,
+							// number of overall deaths
 							dth : 0,
+							// number of unassigned stat points
 							poi : 5
 						},
 						inv: {
@@ -529,7 +566,14 @@ var commandMap = {
 							ring : {}
 						},
 						cooldowns : {},
-						buffs : {}
+						buffs : {},
+						// sets default starting location
+						location : {
+							// current province
+							prv : 'Xymborex',
+							// current specific location within that province
+							loc : 'Dysphoria'
+						}
 					};
 
 					//userData.gen.nam = username;
@@ -1159,7 +1203,8 @@ var commandMap = {
 			for(var slot in userData.equipment){
 				console.log(`   ${slot}:`);
 				for(var itm in userData.equipment[slot]){
-					console.log(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
+					//console.log(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
+					echo(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
 				}
 			}
 			console.log();
@@ -1184,8 +1229,12 @@ function run(){
 
 		console.log('\n !=============== [Welcome to Test RPG!] ===============!');
 		commandMap['profiles'].func('');
-		console.log('   Use the \'new\' command followed by your desired\n   username to start a new game or \'load\' followed by the\n   username of your desired profile to load a previously\n   saved game.\n');
-		console.log('   For help, use \'commands\' to display a list of\n   commands that can be used in the game.\n');
+		//console.log('   Use the \'new\' command followed by your desired\n   username to start a new game or \'load\' followed by the\n   username of your desired profile to load a previously\n   saved game.\n');
+		echo('Use the \'new\' command followed by your desired username to start a new game or \'load\' followed by the username of your desired profile to load a previously saved game.');
+		console.log();
+		//console.log('   For help, use \'commands\' to display a list of\n   commands that can be used in the game.\n');
+		echo('For help, use \'commands\' to display a list of commands that can be used in the game.');
+		console.log();
 	}
 
 	var command = readlineSync.question(' ');
@@ -1224,15 +1273,24 @@ function run(){
 					hasCooldown = Math.floor(hasCooldown / 60);
 					unit = 'minutes';
 				}
-				console.log(`\n   That command is not ready yet. ${hasCooldown} ${unit} left until ready.\n`);
+				//console.log(`\n   That command is not ready yet. ${hasCooldown} ${unit} left until ready.\n`);
+				console.log();
+				echo(`That command is not ready yet. ${hasCooldown} ${unit} left until ready.`);
+				console.log();
 			}
 		}
 		else{
-			console.log('\n   That command is not allowed right now. Create or load a profile, then try again.\n');
+			//console.log('\n   That command is not allowed right now. Create or load a profile, then try again.\n');
+			console.log();
+			echo('That command is not allowed right now. Create or load a profile, then try again.');
+			console.log();
 		}
 	}
 	else{
-		console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
+		//console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
+		console.log();
+		echo(`'${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.`);
+		console.log();
 		sessionData.linesSince++;
 	}
 

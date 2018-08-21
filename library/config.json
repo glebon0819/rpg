@@ -48,7 +48,8 @@
 				"4":"exit",
 				"5":"delete",
 				"6":"profiles",
-				"7":"info"
+				"7":"info",
+				"8":"help"
 			},
 			"black":{}
 		},

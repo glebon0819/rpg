@@ -694,10 +694,19 @@ var commandMap = {
 		'des' : '- Displays a list of usable commands.',
 		'func' : function(cmd){
 			console.log(`\n   Commands\n ========================================================\n`);
+			var lists = {};
 			var cmds = Object.keys(commandMap);
 			cmds.forEach(cmd => {
-				console.log(`   ${cmd}\n`);
+				if(lists[commandMap[cmd].grp] === undefined){
+					lists[commandMap[cmd].grp] = [];
+				}
+				lists[commandMap[cmd].grp].push(cmd);
 			});
+			for(var group in lists){
+				echo(group + ':');
+				echo(lists[group].join(', '));
+				console.log();
+			}
 		}
 	},
 	// shows the user a list of the items in their inventory
@@ -1218,8 +1227,26 @@ var commandMap = {
 		'func' : function(cmd){
 			commandMap['equipment'].func(cmd);
 		}
+	},
+
+	// displays a brief guide on how to play the game and directs the player to some other helpful commands
+	'help' : {
+		'grp' : 'Miscellaneous',
+		'des' : '- Displays a short guide on how to play the game.',
+		'func' : function(cmd){
+			// explain how to enter commands into the console
+			console.log();
+			echo('To play the game, enter commands and use the game\'s feedback to determine your next course of action. You can use commands to manage your inventory, equipment, and stats, go on adventures, buy and sell items, etc. For a list of commands that the game recognizes, use the command \'commands\'.');
+			console.log();
+
+			// define some helpful commands that they can go to next, such as 'commands' and 'info'
+			echo('Other helpful commands to get you started:');
+			echo('+ \'commands\' - displays a list of commands by what category they fall within.');
+			echo('+ \'info\' <command> - typing info followed by a command will give you more information about that command, such as what it does and what information it requires you to input in order to function and what order it requires that information.');
+			console.log();
+		}
 	}
-};	
+};
 
 function run(){
 

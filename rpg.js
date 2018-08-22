@@ -258,8 +258,8 @@ function isStat(str){
 function isInInv(itm){
 	var isInInv = false;
 	Object.keys(userData.inv).forEach(item => {
-		if(item == itm){
-			isInInv = true;
+		if(itm == items[item].nam){
+			isInInv = item;
 		}
 	});
 	return isInInv;
@@ -268,7 +268,8 @@ function isInInv(itm){
 // removes item from inventory and applies its buffs and effects
 function consume(itm){
 	// get id of item from inventory and use it to access item's description in encyclopedia
-	var id = userData.inv[itm].og;
+	//var id = userData.inv[itm];
+	var id = isInInv(itm);
 
 	var itemBuffs = items[id].buffs;
 	if(itemBuffs !== undefined && Object.keys(itemBuffs).length > 0){
@@ -837,9 +838,10 @@ var commandMap = {
 			// check if item is defined
 			if(itm.length > 0){
 				// check if is in inventory
-				if(isInInv(itm)){
+				var id = isInInv(itm);
+				if(id !== false){
 					// check if is food
-					if(items[userData.inv[itm].og].typ == 'potion' || items[userData.inv[itm].og].typ == 'beverage'){
+					if(items[id].typ == 'potion' || items[id].typ == 'beverage'){
 						// consume (which removes it from inventory and applies the buff/effect)
 						try{
 							console.log(`\n   You drink '${itm}'.\n`);
@@ -873,9 +875,10 @@ var commandMap = {
 			// check if item is defined
 			if(itm.length > 0){
 				// check if is in inventory
-				if(isInInv(itm)){
+				var id = isInInv(itm);
+				if(id !== false){
 					// check if is food
-					if(items[userData.inv[itm].og].typ == 'food'){
+					if(items[id].typ == 'food'){
 						// consume (which removes it from inventory and applies the buff/effect)
 						try{
 							consume(itm);

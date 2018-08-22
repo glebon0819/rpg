@@ -542,28 +542,22 @@ var commandMap = {
 							poi : 5
 						},
 						inv: {
-							'Health Potion' : {
-								og : 1,
+							'1' : {
 								qty : 1
 							},
-							'Poison' : {
-								og : 5,
+							'5' : {
 								qty : 1
 							},
-							'Water' : {
-								og : 12,
+							'12' : {
 								qty : 2
 							},
-							'Rusty Dagger' : {
-								og : 15,
+							'15' : {
 								qty : 1
 							},
-							'Goblin Coif' : {
-								og : 14,
+							'14' : {
 								qty : 3
 							},
-							'Agility Potion' : {
-								og : 16,
+							'16' : {
 								qty : 3
 							}
 						},
@@ -735,9 +729,9 @@ var commandMap = {
 		'func' : function(cmd){
 			if(Object.keys(userData.inv).length > 0){
 				console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
-				var items = Object.keys(userData.inv);
-				items.forEach(item => {
-					console.log('   ' + userData.inv[item].qty + ` x ${item}`);
+				var itms = Object.keys(userData.inv);
+				itms.forEach(item => {
+					console.log('   ' + userData.inv[item].qty + ` x ${items[item].nam}`);
 				});
 				console.log('\n ========================================================\n');
 			}

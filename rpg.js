@@ -82,33 +82,33 @@ function getSaves(){
 }
 
 // function that adds an item to player inventory
-function addToInv(itm, num, qty, ech){
+function addToInv(num, qty, ech){
 	// get inventory items
 	var inv = Object.keys(userData.inv);
 	var match = false;
 	// if item is in inventory increment qty, if not, add item
 	inv.forEach(item => {
-		if(itm == item){
+		if(num == item){
 			match = true;
 		}
 	});
 
 	if(match){
-		userData.inv[itm].qty = userData.inv[itm].qty + qty;
+		userData.inv[num].qty = userData.inv[num].qty + qty;
 	}else{
-		userData.inv[itm] = { og : num, qty : qty };
+		userData.inv[num] = { qty : qty };
 	}
 
 	// prints to screen message notifying player that an item was added to their inventory if the echo condition is true
 	if(ech === true){
-		console.log(`\n   ${qty} x '${itm}' added to inventory.\n`);
+		console.log(`\n   ${qty} x '${items[num].nam}' added to inventory.\n`);
 	}
 }
 
 // function that removes an item from player inventory
-function remFromInv(itm, qty){
+function remFromInv(id, qty){
 	// get inventory items
-	var inv = Object.keys(userData.inv);
+	/*var inv = Object.keys(userData.inv);
 	var match = false;
 	// if item is in inventory decrement qty, if not, remove item
 	inv.forEach(item => {
@@ -125,6 +125,12 @@ function remFromInv(itm, qty){
 		return true;
 	}else{
 		return false;
+	}*/
+	if(userData.inv[id].qty > qty){
+		userData.inv[id].qty -= qty;
+	}
+	else{
+		delete userData.inv[id];
 	}
 }
 
@@ -258,7 +264,7 @@ function isStat(str){
 function isInInv(itm){
 	var isInInv = false;
 	Object.keys(userData.inv).forEach(item => {
-		if(itm == items[item].nam){
+		if(itm.toLowerCase() == items[item].nam.toLowerCase()){
 			isInInv = item;
 		}
 	});
@@ -307,7 +313,7 @@ function consume(itm){
 		}
 	}
 
-	remFromInv(itm, 1);
+	remFromInv(id, 1);
 
 	var effects = items[id].effects;
 	for(var effect in effects){
@@ -916,7 +922,7 @@ var commandMap = {
 		'func' : function(cmd){
 			
 			if(checkAP(5)){
-				addToInv('Berries', 6, 2, true);
+				addToInv(6, 2, true);
 				changeAP(-5);
 			}
 			else{
@@ -934,7 +940,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(10)){
-				addToInv('Fish', 3, 1, true);
+				addToInv(3, 1, true);
 				changeAP(-10);
 			}
 			else{
@@ -952,7 +958,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(20)){
-				addToInv('Log', 2, 1, true);
+				addToInv(2, 1, true);
 				changeAP(-20);
 			}
 			else{
@@ -970,7 +976,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(50)){
-				addToInv('Iron Ore', 4, 1, true);
+				addToInv(4, 1, true);
 				changeAP(-50);
 			}
 			else{

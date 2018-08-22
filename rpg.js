@@ -493,6 +493,17 @@ function itmExists(itm){
 	return exists;
 }
 
+// checks if item has been renamed; if so returns its new name, if not returns false
+function hasNewName(og){
+	var newName = false;
+
+	if(userData.renames[og] !== undefined){
+		newName = userData.renames[og];
+	}
+
+	return newName;
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -737,7 +748,7 @@ var commandMap = {
 				console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
 				var itms = Object.keys(userData.inv);
 				itms.forEach(item => {
-					console.log('   ' + userData.inv[item].qty + ` x ${items[item].nam}`);
+					console.log('   ' + userData.inv[item].qty + ` x ${(hasNewName(item) !== false ? hasNewName(item) : items[item].nam)}`);
 				});
 				console.log('\n ========================================================\n');
 			}
@@ -1061,11 +1072,9 @@ var commandMap = {
 
 				if(isInEqp(itm) !== false){
 					qty = userData.equipment[isInEqp(itm)][itm].qty;
-					//var id = userData.equipment[isInEqp(itm)][itm].og;
 				}
 				if(isInInv(itm)){
 					qty += userData.inv[id].qty;
-					//var id = userData.inv[id].og;
 				}
 
 				var properties = items[id];
@@ -1232,7 +1241,7 @@ var commandMap = {
 			for(var slot in userData.equipment){
 				console.log(`   ${slot}:`);
 				for(var itmId in userData.equipment[slot]){
-					echo(`   +  ${userData.equipment[slot][itmId].qty} x ${items[itmId].nam}`);
+					echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(hasNewName(itmId) !== false ? hasNewName(itmId) : items[itmId].nam)}`);
 				}
 			}
 			console.log();

@@ -260,7 +260,7 @@ function isStat(str){
 	return isStat;
 }
 
-// returns whether an item is in the player's inventory
+// returns whether an item is in the player's inventory; returns items id number if yes, false if no
 function isInInv(itm){
 	var isInInv = false;
 	Object.keys(userData.inv).forEach(item => {
@@ -387,7 +387,7 @@ function die(){
 }
 
 // adds item to player's equipment, removing it from their inventory
-function equip(nam, og){
+function equip(og){
 	// checks that the max number of items for this slot will not be surpassed
 	var item_count = 0;
 	for(var item in userData.equipment[items[og].slt]){
@@ -397,11 +397,11 @@ function equip(nam, og){
 	//if(Object.keys(userData.equipment[items[og].slt]).length < config.equipment[items[og].slt].ITEM_COUNT_MAX){
 	if(item_count < config.equipment[items[og].slt].ITEM_COUNT_MAX){
 		// adds the item to the appropriate equipment slot
-		if(userData.equipment[items[og].slt][nam] === undefined){
-			userData.equipment[items[og].slt][nam] = { og : og, qty : 1 };
+		if(userData.equipment[items[og].slt][og] === undefined){
+			userData.equipment[items[og].slt][og] = { qty : 1 };
 		}
 		else{
-			userData.equipment[items[og].slt][nam].qty++;
+			userData.equipment[items[og].slt][og].qty++;
 		}
 
 		// goes through each of the item's stat increases and boosts the user's stats
@@ -410,7 +410,7 @@ function equip(nam, og){
 		}
 	
 		// removes the item from player inventory
-		remFromInv(nam, 1);
+		remFromInv(og, 1);
 	}
 	else{
 		throw `Number of items allowed in your ${items[og].slt} slot has been reached. Unequip an item in that slot to free up room.`;
@@ -418,20 +418,19 @@ function equip(nam, og){
 }
 
 // removes an item from player's equipment, adding it to their inventory and removing any stat increases
-function unequip(nam, og){
-	addToInv(nam, og, 1);
+function unequip(og){
+	addToInv(og, 1);
 
 	// goes through each of the item's stat increases and reduces the user's stats
 	for(var stat in items[og].stats){
 		userData.stats[stat] -= items[og].stats[stat];
 	}
 
-	//delete userData.equipment[items[og].slt][nam];
-	if(userData.equipment[items[og].slt][nam].qty > 1){
-		userData.equipment[items[og].slt][nam].qty--;
+	if(userData.equipment[items[og].slt][og].qty > 1){
+		userData.equipment[items[og].slt][og].qty--;
 	}
 	else{
-		delete userData.equipment[items[og].slt][nam];
+		delete userData.equipment[items[og].slt][og];
 	}
 }
 
@@ -887,8 +886,8 @@ var commandMap = {
 					if(items[id].typ == 'food'){
 						// consume (which removes it from inventory and applies the buff/effect)
 						try{
-							consume(itm);
 							console.log(`\n   You ate '${itm}'.\n`);
+							consume(itm);
 						}
 						catch(err){
 							console.log(`\n   Failed to eat '${itm}'. ${err}\n`);
@@ -1164,15 +1163,18 @@ var commandMap = {
 
 			if(item.length > 0){
 				// checks that the item given exists in the user's inventory
-				if(isInInv(item)){
+				var id = isInInv(item);
+				if(id !== false){
 					// checks that the item is equippable
-					if(items[userData.inv[item].og].slt !== undefined){
+					if(items[id].slt !== undefined){
 						try{
-							equip(item, userData.inv[item].og);
+							equip(id);
 							console.log(`\n   '${item}' equipped.\n`);
 						}
 						catch(err){
-							console.log(`\n   Item could not be equipped. ${err}\n`);
+							console.log();
+							echo(`\n   Item could not be equipped. ${err}\n`);
+							console.log();
 						}
 					}
 					else{
@@ -1198,28 +1200,16 @@ var commandMap = {
 
 			if(item.length > 0){
 				// get original id number, throw exception if cannot be found
-				/*for(var slot in userData.equipment){
-					for(var itm in userData.equipment[slot]){
-						if(itm == item){
-							var og = userData.equipment[slot][itm].og;
-						}
-					}
-				}*/
-				if(isInEqp(item)){
-					var slot = isInEqp(item);
-					for(var itm in userData.equipment[slot]){
-						if(itm == item){
-							var og = userData.equipment[slot][itm].og;
-						}
-					}
-				}
+				var og = itmExists(item);
 
-				if(og !== undefined){
-					unequip(item, og);
+				if(og !== false){
+					unequip(og);
 					console.log(`\n   '${item}' removed from your equipment.\n`);
 				}
 				else{
-					console.log('\n   Item could not be unequipped. Item could not be found in your equipment.\n');
+					console.log();
+					echo('Item could not be unequipped. Item could not be found in your equipment.');
+					console.log();
 				}
 			}
 		}
@@ -1233,9 +1223,9 @@ var commandMap = {
 			console.log();
 			for(var slot in userData.equipment){
 				console.log(`   ${slot}:`);
-				for(var itm in userData.equipment[slot]){
+				for(var itmId in userData.equipment[slot]){
 					//console.log(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
-					echo(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
+					echo(`   +  ${userData.equipment[slot][itmId].qty} x ${items[itmId].nam}`);
 				}
 			}
 			console.log();

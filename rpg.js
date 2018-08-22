@@ -761,12 +761,19 @@ var commandMap = {
 		'func' : function(cmd){
 			cmd.shift();
 			var item = cmd.join(' ');
+			var id = itmExists(item);
+
 			if(item.length > 0){
-				if(remFromInv(item, 1)){
-					console.log(`\n   '${item}' dropped from inventory.\n`);
+				if(id !== false){
+					remFromInv(id, 1)
+					console.log();
+					echo(`'${item}' dropped from inventory.`);
+					console.log();
 				}
 				else{
-					console.log(`\n   Failed to drop '${item}' from inventory. No such item found.\n`);
+					console.log();
+					echo(`Failed to drop '${item}'. No such item found in your inventory.`);
+					console.log();
 				}
 			}
 			else{
@@ -1048,16 +1055,17 @@ var commandMap = {
 			cmd.shift();
 			var itm = cmd.join(' ');
 
-			if(isInEqp(itm) !== false || isInInv(itm)){
+			if(isInEqp(itm) !== false || isInInv(itm) !== false){
 				var qty = 0;
+				var id = itmExists(itm);
 
 				if(isInEqp(itm) !== false){
 					qty = userData.equipment[isInEqp(itm)][itm].qty;
-					var id = userData.equipment[isInEqp(itm)][itm].og;
+					//var id = userData.equipment[isInEqp(itm)][itm].og;
 				}
 				if(isInInv(itm)){
-					qty += userData.inv[itm].qty;
-					var id = userData.inv[itm].og;
+					qty += userData.inv[id].qty;
+					//var id = userData.inv[id].og;
 				}
 
 				var properties = items[id];
@@ -1224,7 +1232,6 @@ var commandMap = {
 			for(var slot in userData.equipment){
 				console.log(`   ${slot}:`);
 				for(var itmId in userData.equipment[slot]){
-					//console.log(`   +  ${userData.equipment[slot][itm].qty} x ${itm}`);
 					echo(`   +  ${userData.equipment[slot][itmId].qty} x ${items[itmId].nam}`);
 				}
 			}

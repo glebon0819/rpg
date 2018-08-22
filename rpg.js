@@ -469,6 +469,24 @@ function echo(string){
 	}
 }
 
+// checks if an item exists in the encyclopedia, returns its ID number if so, false if not
+function itmExists(itm){
+	var exists = false;
+	// check if item exists in the user's renames
+	for(var rename in userData.renames){
+		if(itm.toLowerCase() == userData.renames[rename]){
+			exists = rename;
+		}
+	}
+	// check if item exists in the encyclopedia
+	for(var item in items){
+		if(itm.toLowerCase() == items[item].nam.toLowerCase()){
+			exists = item;
+		}
+	}
+	return exists;
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -573,7 +591,8 @@ var commandMap = {
 							prv : 'Xymborex',
 							// current specific location within that province
 							loc : 'Dysphoria'
-						}
+						},
+						renames : {}
 					};
 
 					//userData.gen.nam = username;
@@ -703,7 +722,7 @@ var commandMap = {
 				lists[commandMap[cmd].grp].push(cmd);
 			});
 			for(var group in lists){
-				echo(group + ':');
+				echo(`[${group}]:`);
 				echo(lists[group].join(', '));
 				console.log();
 			}
@@ -1244,6 +1263,46 @@ var commandMap = {
 			echo('+ \'commands\' - displays a list of commands by what category they fall within.');
 			echo('+ \'info\' <command> - typing info followed by a command will give you more information about that command, such as what it does and what information it requires you to input in order to function and what order it requires that information.');
 			console.log();
+		}
+	},
+
+	// renames an item
+	'rename' : {
+		'grp' : 'Inventory',
+		'des' : '<item in inventory or equipment> - renames an item.',
+		'func' : function(cmd){
+			cmd.shift();
+			var itm = cmd.join(' ');
+
+			// verify that the item they chose to rename exists
+			var id = itmExists(itm);
+			if(id !== false){
+				var newName = readlineSync.question(' New name: ');
+
+				// verify that the new name is not already taken
+				if(itmExists(newName) === false){
+
+					// get the original ID number for the item 
+
+					// add the rename to the user's data
+					//userData.renames[newName] = id;
+					userData.renames[id] = newName;
+
+					console.log();
+					echo(`'${itm}' renamed to '${newName}'.`);
+					console.log();
+				}
+				else{
+					console.log();
+					echo('An item with that name already exists.');
+					console.log();
+				}
+			}
+			else{
+				console.log();
+				echo('That item does not exist.');
+				console.log();
+			}
 		}
 	}
 };

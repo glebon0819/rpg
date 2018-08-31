@@ -240,13 +240,6 @@ function cleanUp(){
 	for(var buff in userData.buffs){
 		setTimeout(removeBuff, userData.buffs[buff].dur * 1000 - (new Date(userData.gen.sve) - new Date(buff)), buff);
 	}
-
-	// begins replenishing AP again if it is not at max
-	if(userData.gen.ap < userData.gen.apm){
-		setInterval(function(){
-			changeAP(1);
-		}, 3000);
-	}
 }
 
 // returns whether a string is a stat
@@ -326,24 +319,19 @@ function consume(itm){
 	}
 }
 
+// adds a number to AP (including negatives)
+// if AP is > max, sets AP to max; if AP < 0, sets AP to 0
 function changeAP(val){
 	userData.gen.ap += val;
-	if(userData.gen.ap > userData.gen.apm){
+	if(userData.gen.ap >= userData.gen.apm){
 		userData.gen.ap = userData.gen.apm;
-		clearInterval(replenish);
-		replenish = null;
 	}
 	else if(userData.gen.ap < 0){
 		userData.gen.ap = 0;
 	}
 
-	// if ap is less than max, replenish it
-	if(userData.gen.ap < userData.gen.apm && replenish === null){
-		// effected by user's resilience stat
-		replenish = setInterval(function(){
-			changeAP(1);
-		}, 3000);
-	}
+	// set the last time AP was changed to now
+	userData.gen.apc = getTimestamp(true);
 
 	//console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 }
@@ -367,7 +355,27 @@ function changeHP(val){
 
 // checks if AP is above or equal to a given value
 function checkAP(num){
+	fixAP();
+
 	return (userData.gen.ap >= num ? true : false);
+}
+
+// returns number of milliseconds that should elapse between AP points being regenerated
+function getAPIncrement(){
+	// default value for now
+	// eventually this value will be affected by the user's stats
+	return 3000;
+}
+
+// gets AP back up to where it is supposed to be (according to the increment and how many milliseconds have elapsed)
+function fixAP(){
+	if(userData.gen.ap < userData.gen.apm){
+		var lastTime = new Date(userData.gen.apc);
+		var currentTime = new Date(getTimestamp(true));
+		if((currentTime - lastTime) >= getAPIncrement()){
+			changeAP(Math.floor((currentTime - lastTime) / getAPIncrement()));
+		}
+	}
 }
 
 // kills the player, resetting their userData and sending them back into start mode
@@ -556,7 +564,9 @@ var commandMap = {
 							// number of overall deaths
 							dth : 0,
 							// number of unassigned stat points
-							poi : 5
+							poi : 5,
+							// last time AP was changed
+							apc : null
 						},
 						inv: {
 							'1' : {
@@ -1055,6 +1065,7 @@ var commandMap = {
 		'grp' : 'Stats',
 		'des' : '- Displays your AP level.',
 		'func' : function(cmd){
+			fixAP();
 			console.log(`\n   Your AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 		}
 	},

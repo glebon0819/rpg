@@ -1,6 +1,7 @@
 const readlineSync = require('readline-sync');
 const fs = require('fs');
 const util = require('./library/modules/util');
+const inv = require('./library/modules/inv');
 
 var userData = {},
 	items = {},
@@ -22,6 +23,7 @@ var sessionData = {
 // function that loads the library files
 function loadResources(){
 	items = JSON.parse(fs.readFileSync('./library/encyclopedia.json', 'utf8'));
+	inv.setItems(items);
 	monsters = JSON.parse(fs.readFileSync('./library/bestiary.json', 'utf8'));
 	locations = JSON.parse(fs.readFileSync('./library/atlas.json', 'utf8'));
 	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
@@ -39,40 +41,6 @@ function getSaves(){
 		saves.push({file : file, name : data.gen.nam, date : data.gen.dat});
 	});
 	return saves;
-}
-
-// function that adds an item to player inventory
-function addToInv(num, qty, ech){
-	// get inventory items
-	var inv = Object.keys(userData.inv);
-	var match = false;
-	// if item is in inventory increment qty, if not, add item
-	inv.forEach(item => {
-		if(num == item){
-			match = true;
-		}
-	});
-
-	if(match){
-		userData.inv[num].qty = userData.inv[num].qty + qty;
-	}else{
-		userData.inv[num] = { qty : qty };
-	}
-
-	// prints to screen message notifying player that an item was added to their inventory if the echo condition is true
-	if(ech === true){
-		console.log(`\n   ${qty} x '${items[num].nam}' added to inventory.\n`);
-	}
-}
-
-// function that removes an item from player inventory
-function remFromInv(id, qty){
-	if(userData.inv[id].qty > qty){
-		userData.inv[id].qty -= qty;
-	}
-	else{
-		delete userData.inv[id];
-	}
 }
 
 // checks if a command exists, returns false if not
@@ -194,22 +162,11 @@ function isStat(str){
 	return isStat;
 }
 
-// returns whether an item is in the player's inventory; returns items id number if yes, false if no
-function isInInv(itm){
-	var isInInv = false;
-	Object.keys(userData.inv).forEach(item => {
-		if(itm.toLowerCase() == items[item].nam.toLowerCase()){
-			isInInv = item;
-		}
-	});
-	return isInInv;
-}
-
 // removes item from inventory and applies its buffs and effects
 function consume(itm){
 	// get id of item from inventory and use it to access item's description in encyclopedia
 	//var id = userData.inv[itm];
-	var id = isInInv(itm);
+	var id = inv.isInInv(itm);
 
 	var itemBuffs = items[id].buffs;
 	if(itemBuffs !== undefined && Object.keys(itemBuffs).length > 0){
@@ -247,7 +204,7 @@ function consume(itm){
 		}
 	}
 
-	remFromInv(id, 1);
+	inv.remFromInv(id, 1);
 
 	var effects = items[id].effects;
 	for(var effect in effects){
@@ -359,7 +316,7 @@ function equip(og){
 		}
 	
 		// removes the item from player inventory
-		remFromInv(og, 1);
+		inv.remFromInv(og, 1);
 	}
 	else{
 		throw `Number of items allowed in your ${items[og].slt} slot has been reached. Unequip an item in that slot to free up room.`;
@@ -368,7 +325,7 @@ function equip(og){
 
 // removes an item from player's equipment, adding it to their inventory and removing any stat increases
 function unequip(og){
-	addToInv(og, 1);
+	inv.addToInv(og, 1, false);
 
 	// goes through each of the item's stat increases and reduces the user's stats
 	for(var stat in items[og].stats){
@@ -396,24 +353,6 @@ function isInEqp(itm){
 	return isInEqp;
 }
 
-// checks if an item exists in the encyclopedia, returns its ID number if so, false if not
-function itmExists(itm){
-	var exists = false;
-	// check if item exists in the user's renames
-	for(var rename in userData.renames){
-		if(itm.toLowerCase() == userData.renames[rename]){
-			exists = rename;
-		}
-	}
-	// check if item exists in the encyclopedia
-	for(var item in items){
-		if(itm.toLowerCase() == items[item].nam.toLowerCase()){
-			exists = item;
-		}
-	}
-	return exists;
-}
-
 // checks if item has been renamed; if so returns its new name, if not returns false
 function hasNewName(og){
 	var newName = false;
@@ -432,12 +371,6 @@ var commandMap = {
 		// what command group it belongs to
 		'grp' : 'Profile',
 		'des' : '<profile name> - Creates a new profile, loading default user data and starting your first game.',
-		// expected number of additional inputs
-		'expIn' : 1,
-		// messages to give before the extra inputs
-		'mess' : {
-			0 : '\n   What\'s your name?\n'
-		},
 		'func' : function(cmd){
 			cmd.shift();
 			var username = cmd.join(' ');
@@ -458,7 +391,8 @@ var commandMap = {
 					userData.gen.dat = util.getTimestamp(true);
 					userData.gen.dt2 = util.getTimestamp(false);
 
-					//userData.gen.nam = username;
+					inv.setUserData(userData);
+
 					sessionData.mode = 'general';
 					console.log(`\n   Welcome, ${userData.gen.nam}!\n   Your profile was created at ${userData.gen.dat}.`);
 
@@ -516,6 +450,9 @@ var commandMap = {
 					var json = fs.readFileSync('./saves/' + filename, 'utf8');
 					var data = JSON.parse(json);
 					userData = data;
+
+					inv.setInventory(userData.inv);
+
 					sessionData.mode = 'general';
 					
 					// clean up cooldowns, buffs, etc. left over from last session
@@ -624,11 +561,11 @@ var commandMap = {
 		'func' : function(cmd){
 			cmd.shift();
 			var item = cmd.join(' ');
-			var id = itmExists(item);
+			var id = inv.itmExists(item);
 
 			if(item.length > 0){
 				if(id !== false){
-					remFromInv(id, 1)
+					inv.remFromInv(id, 1)
 					console.log();
 					util.echo(`'${item}' dropped from inventory.`);
 					console.log();
@@ -715,7 +652,7 @@ var commandMap = {
 			// check if item is defined
 			if(itm.length > 0){
 				// check if is in inventory
-				var id = isInInv(itm);
+				var id = inv.isInInv(itm);
 				if(id !== false){
 					// check if is food
 					if(items[id].typ == 'potion' || items[id].typ == 'beverage'){
@@ -752,7 +689,7 @@ var commandMap = {
 			// check if item is defined
 			if(itm.length > 0){
 				// check if is in inventory
-				var id = isInInv(itm);
+				var id = inv.isInInv(itm);
 				if(id !== false){
 					// check if is food
 					if(items[id].typ == 'food'){
@@ -793,7 +730,7 @@ var commandMap = {
 		'func' : function(cmd){
 			
 			if(checkAP(5)){
-				addToInv(6, 2, true);
+				inv.addToInv(6, 2, true);
 				changeAP(-5);
 			}
 			else{
@@ -811,7 +748,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(10)){
-				addToInv(3, 1, true);
+				inv.addToInv(3, 1, true);
 				changeAP(-10);
 			}
 			else{
@@ -829,7 +766,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(20)){
-				addToInv(2, 1, true);
+				inv.addToInv(2, 1, true);
 				changeAP(-20);
 			}
 			else{
@@ -847,7 +784,7 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(50)){
-				addToInv(4, 1, true);
+				inv.addToInv(4, 1, true);
 				changeAP(-50);
 			}
 			else{
@@ -929,14 +866,14 @@ var commandMap = {
 			cmd.shift();
 			var itm = cmd.join(' ');
 
-			if(isInEqp(itm) !== false || isInInv(itm) !== false){
+			if(isInEqp(itm) !== false || inv.isInInv(itm) !== false){
 				var qty = 0;
-				var id = itmExists(itm);
+				var id = inv.itmExists(itm);
 
 				if(isInEqp(itm) !== false){
 					qty = userData.equipment[isInEqp(itm)][itm].qty;
 				}
-				if(isInInv(itm)){
+				if(inv.isInInv(itm)){
 					qty += userData.inv[id].qty;
 				}
 
@@ -1043,7 +980,7 @@ var commandMap = {
 
 			if(item.length > 0){
 				// checks that the item given exists in the user's inventory
-				var id = isInInv(item);
+				var id = inv.isInInv(item);
 				if(id !== false){
 					// checks that the item is equippable
 					if(items[id].slt !== undefined){
@@ -1080,7 +1017,7 @@ var commandMap = {
 
 			if(item.length > 0){
 				// get original id number, throw exception if cannot be found
-				var og = itmExists(item);
+				var og = inv.itmExists(item);
 
 				if(og !== false){
 					unequip(og);
@@ -1154,12 +1091,12 @@ var commandMap = {
 			var itm = cmd.join(' ');
 
 			// verify that the item they chose to rename exists
-			var id = itmExists(itm);
+			var id = inv.itmExists(itm);
 			if(id !== false){
 				var newName = readlineSync.question(' New name: ');
 
 				// verify that the new name is not already taken
-				if(itmExists(newName) === false){
+				if(inv.itmExists(newName) === false){
 
 					// get the original ID number for the item 
 

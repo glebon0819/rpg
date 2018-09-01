@@ -120,5 +120,15 @@
 				"dur":"300"
 			}
 		}
+	},
+	"17":{
+		"nam":"Lesser Ring of Intellect",
+		"val":5,
+		"typ":"armor",
+		"slt":"ring",
+		"arm":0,
+		"stats":{
+			"intellect":1
+		}
 	}
 }

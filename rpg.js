@@ -1,5 +1,6 @@
 const readlineSync = require('readline-sync');
 const fs = require('fs');
+const util = require('./library/modules/util');
 
 var userData = {},
 	items = {},
@@ -17,47 +18,6 @@ var sessionData = {
 	'linesSince' : 0,
 	'mode' : 'start'
 };
-
-function getTimestamp(readable){
-	var now = new Date();
-	var dd = now.getDate();
-	var mm = now.getMonth()+1;
-	var yyyy = now.getFullYear();
-	var hh = now.getHours();
-	var mm2 = now.getMinutes();
-	var ss = now.getSeconds();
-	var mmm = now.getMilliseconds();
-
-	if(dd < 10) {
-	    dd = '0' + dd;
-	} 
-	if(mm < 10) {
-	    mm = '0' + mm;
-	}
-	if(hh < 10) {
-	    hh = '0' + hh;
-	}
-	if(mm2 < 10) {
-	    mm2 = '0' + mm2;
-	}
-	if(ss < 10) {
-	    ss = '0' + ss;
-	}
-	if(mmm < 10){
-		mmm = '00' + mmm;
-	}
-	else if(mmm < 100){
-		mmm = '0' + mmm;
-	}
-
-	if(readable){
-		timestamp = (yyyy + '-' + mm + '-' + dd + 'T' + hh + ':' + mm2 + ':' + ss + '.' + mmm + 'Z');
-	}
-	else{
-		timestamp = (dd + mm + yyyy + hh + mm2 + ss + mmm);
-	}
-	return timestamp;
-}
 
 // function that loads the library files
 function loadResources(){
@@ -107,25 +67,6 @@ function addToInv(num, qty, ech){
 
 // function that removes an item from player inventory
 function remFromInv(id, qty){
-	// get inventory items
-	/*var inv = Object.keys(userData.inv);
-	var match = false;
-	// if item is in inventory decrement qty, if not, remove item
-	inv.forEach(item => {
-		if(itm == item){
-			match = true;
-		}
-	});
-
-	if(match){
-		userData.inv[itm].qty = userData.inv[itm].qty - qty;
-		if(userData.inv[itm].qty <= 0){
-			delete userData.inv[itm];
-		}
-		return true;
-	}else{
-		return false;
-	}*/
 	if(userData.inv[id].qty > qty){
 		userData.inv[id].qty -= qty;
 	}
@@ -172,7 +113,7 @@ function createCooldown(cmd, sec){
 	// converts seconds to milliseconds
 	var dur = sec * 1000;
 	// add a cooldown to the userData
-	userData.cooldowns[cmd] = { beg : getTimestamp(false), dur : sec };
+	userData.cooldowns[cmd] = { beg : util.getTimestamp(false), dur : sec };
 	// create a timer to lift the cooldown
 	setTimeout(removeCooldown, dur, cmd);
 }
@@ -189,7 +130,7 @@ function checkCooldown(cmd){
 	if(userData.cooldowns !== undefined){
 		Object.keys(userData.cooldowns).forEach(command => {
 			if(command == cmd){
-				timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
+				timeleft = userData.cooldowns[command].dur - Math.floor((util.getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
 			}
 		});
 	}
@@ -201,7 +142,7 @@ function checkCooldown(cmd){
 function createBuff(stat, pts, sec, src){
 
 	// adds a buff to the userData
-	var id = getTimestamp(true);
+	var id = util.getTimestamp(true);
 	userData.buffs[id] = { stat : stat, pts : pts, dur : sec, src : src };
 	userData.stats[stat] += parseInt(pts);
 
@@ -227,7 +168,7 @@ function cleanUp(){
 
 	// goes through each cooldown, removes expired ones and sets new timers for ones that should still be active
 	for(var command in userData.cooldowns){
-		var timeleft = userData.cooldowns[command].dur - Math.floor((getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
+		var timeleft = userData.cooldowns[command].dur - Math.floor((util.getTimestamp(false) - userData.cooldowns[command].beg) / 1000);
 		if(timeleft > 0){
 			setTimeout(removeCooldown, timeleft * 1000, command);
 		}
@@ -331,7 +272,7 @@ function changeAP(val){
 	}
 
 	// set the last time AP was changed to now
-	userData.gen.apc = getTimestamp(true);
+	userData.gen.apc = util.getTimestamp(true);
 
 	//console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 }
@@ -371,7 +312,7 @@ function getAPIncrement(){
 function fixAP(){
 	if(userData.gen.ap < userData.gen.apm){
 		var lastTime = new Date(userData.gen.apc);
-		var currentTime = new Date(getTimestamp(true));
+		var currentTime = new Date(util.getTimestamp(true));
 		if((currentTime - lastTime) >= getAPIncrement()){
 			changeAP(Math.floor((currentTime - lastTime) / getAPIncrement()));
 		}
@@ -455,34 +396,6 @@ function isInEqp(itm){
 	return isInEqp;
 }
 
-// logs strings to the console while maintaining the predefined character width of the game
-function echo(string){
-	var lastI = 0;
-	var end;
-	for(var i = 0; i < Math.ceil(string.length / 54); i++){
-		var endFound = false;
-		var char;
-		end = lastI + 53;
-		while(!endFound){
-			if(end === lastI){
-				endFound = true;
-				end = lastI + 53;
-			}
-			else{
-				char = string.charAt(end);
-				if(char === ' ' || end === string.length){
-					endFound = true;
-				}
-				else{
-					end--;
-				}
-			}
-		}
-		console.log(`   ${string.substring(lastI, end).trim()}`);
-		lastI = end;
-	}
-}
-
 // checks if an item exists in the encyclopedia, returns its ID number if so, false if not
 function itmExists(itm){
 	var exists = false;
@@ -540,81 +453,10 @@ var commandMap = {
 				});
 
 				if(available){
-					userData = {
-						gen: {
-							nam : username,
-							dat : getTimestamp(true),
-							dt2 : getTimestamp(false),
-							sve : null,
-							lvl : 1,
-							// current number of hit points
-							hp : 100,
-							// max number of hit points
-							hpm : 100,
-							// current number of action points
-							ap : 100,
-							// max number of action points
-							apm : 100,
-							// current number of experience points
-							exp : 0,
-							gld : 5,
-							slv : 50,
-							// number of overall monster kills
-							kll : 0,
-							// number of overall deaths
-							dth : 0,
-							// number of unassigned stat points
-							poi : 5,
-							// last time AP was changed
-							apc : null
-						},
-						inv: {
-							'1' : {
-								qty : 1
-							},
-							'5' : {
-								qty : 1
-							},
-							'12' : {
-								qty : 2
-							},
-							'15' : {
-								qty : 1
-							},
-							'14' : {
-								qty : 3
-							},
-							'16' : {
-								qty : 3
-							}
-						},
-						stats: {
-							strength : 0,
-							stamina : 0,
-							resilience : 0,
-							intellect : 0,
-							speed : 0,
-							agility : 0
-						},
-						equipment : {
-							helmet : {},
-							chest : {},
-							pants : {},
-							boots : {},
-							weapon : {},
-							ring : {}
-						},
-						cooldowns : {},
-						buffs : {},
-						// sets default starting location
-						location : {
-							// current province
-							prv : 'Xymborex',
-							// current specific location within that province
-							loc : 'Dysphoria'
-						},
-						renames : {}
-					};
+					userData = config.defaultProfile;
+					userData.gen.nam = username;
+					userData.gen.dat = util.getTimestamp(true);
+					userData.gen.dt2 = util.getTimestamp(false);
 
 					//userData.gen.nam = username;
 					sessionData.mode = 'general';
@@ -743,8 +585,8 @@ var commandMap = {
 				lists[commandMap[cmd].grp].push(cmd);
 			});
 			for(var group in lists){
-				echo(`[${group}]:`);
-				echo(lists[group].join(', '));
+				util.echo(`[${group}]:`);
+				util.echo(lists[group].join(', '));
 				console.log();
 			}
 		}
@@ -788,12 +630,12 @@ var commandMap = {
 				if(id !== false){
 					remFromInv(id, 1)
 					console.log();
-					echo(`'${item}' dropped from inventory.`);
+					util.echo(`'${item}' dropped from inventory.`);
 					console.log();
 				}
 				else{
 					console.log();
-					echo(`Failed to drop '${item}'. No such item found in your inventory.`);
+					util.echo(`Failed to drop '${item}'. No such item found in your inventory.`);
 					console.log();
 				}
 			}
@@ -822,15 +664,15 @@ var commandMap = {
 		'func' : function(cmd){
 			cmd.shift();
 			if(Object.keys(cmd).length === 2){
-				if(isStat(cmd[Object.keys(cmd)[0]])){
-					if(parseInt(cmd[Object.keys(cmd)[1]]) > 0){
-						if(userData.gen.poi >= parseInt(cmd[Object.keys(cmd)[1]])){
-							userData.stats[cmd[Object.keys(cmd)[0]]] += parseInt(cmd[Object.keys(cmd)[1]]);
-							userData.gen.poi -= parseInt(cmd[Object.keys(cmd)[1]]);
-							console.log(`\n   '${cmd[Object.keys(cmd)[0]]}' changed to ${userData.stats[cmd[Object.keys(cmd)[0]]]}.\n`);
+				if(isStat(cmd[Object.keys(cmd)[1]])){
+					if(parseInt(cmd[Object.keys(cmd)[0]]) > 0){
+						if(userData.gen.poi >= parseInt(cmd[Object.keys(cmd)[0]])){
+							userData.stats[cmd[Object.keys(cmd)[1]]] += parseInt(cmd[Object.keys(cmd)[0]]);
+							userData.gen.poi -= parseInt(cmd[Object.keys(cmd)[0]]);
+							console.log(`\n   '${cmd[Object.keys(cmd)[1]]}' changed to ${userData.stats[cmd[Object.keys(cmd)[1]]]}.\n`);
 						}
 						else{
-							console.log('\n   Insufficient unassigned stat points.\n');
+							console.log('\n   Insufficient unassigned stat points to make that assignment.\n');
 						}
 					}
 					else{
@@ -842,13 +684,15 @@ var commandMap = {
 				}
 			}
 			else{
-				console.log('\n   Arguments improperly given. Give a stat followed by the number of points you would like to assign to that stat.\n');
+				console.log();
+				util.echo('Arguments improperly given. Give a stat followed by the number of points you would like to assign to that stat.');
+				console.log();
 			}
 		}
 	},
 	// shows the user general information about themself
 	'me' : {
-		'grp' : 'Miscellaneous',
+		'grp' : 'Stats',
 		'func' : function(cmd){
 			console.log(`
    ${userData.gen.nam}:
@@ -1022,7 +866,7 @@ var commandMap = {
 			if(Object.keys(userData).length > 0){
 
 				// sets last save value in user data to current time
-				userData.gen.sve = getTimestamp(true);
+				userData.gen.sve = util.getTimestamp(true);
 
 				// saves user data to disc as a JSON file
 				if(userData.gen.dt2.length > 0){
@@ -1040,8 +884,16 @@ var commandMap = {
 		'grp' : 'Miscellaneous',
 		'des' : '- Ends your current game and closes the program.',
 		'func' : function(cmd){
-			console.log('\n !======================================================!');
-			process.exit(0);
+			var sure = readlineSync.keyInYNStrict('\n   Are you sure? Unsaved progress will be lost.');
+			if(sure === true){
+				console.log('\n !======================================================!');
+				process.exit(0);
+			}
+			else{
+				console.log();
+				util.echo('Exit cancelled.');
+				console.log();
+			}
 		}
 	},
 
@@ -1201,7 +1053,7 @@ var commandMap = {
 						}
 						catch(err){
 							console.log();
-							echo(`\n   Item could not be equipped. ${err}\n`);
+							util.echo(`\n   Item could not be equipped. ${err}\n`);
 							console.log();
 						}
 					}
@@ -1236,7 +1088,7 @@ var commandMap = {
 				}
 				else{
 					console.log();
-					echo('Item could not be unequipped. Item could not be found in your equipment.');
+					util.echo('Item could not be unequipped. Item could not be found in your equipment.');
 					console.log();
 				}
 			}
@@ -1252,7 +1104,7 @@ var commandMap = {
 			for(var slot in userData.equipment){
 				console.log(`   ${slot}:`);
 				for(var itmId in userData.equipment[slot]){
-					echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(hasNewName(itmId) !== false ? hasNewName(itmId) : items[itmId].nam)}`);
+					util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(hasNewName(itmId) !== false ? hasNewName(itmId) : items[itmId].nam)}`);
 				}
 			}
 			console.log();
@@ -1275,13 +1127,20 @@ var commandMap = {
 		'func' : function(cmd){
 			// explain how to enter commands into the console
 			console.log();
-			echo('To play the game, enter commands and use the game\'s feedback to determine your next course of action. You can use commands to manage your inventory, equipment, and stats, go on adventures, buy and sell items, etc. For a list of commands that the game recognizes, use the command \'commands\'.');
+			util.echo('To play the game, enter commands and use the game\'s feedback to determine your next course of action. You use commands to manage your inventory, equipment, and stats, go on adventures, buy and sell items, etc.');
+			console.log();
+
+			util.echo('Ex: assign 5 strength');
+			console.log();
+			util.echo('Above, the \'assign\' command was used, followed by the number of points they wanted to assign, then followed finally by the stat they wanted to assign points to. Information about what different commands do can be found using the commands below.');
 			console.log();
 
 			// define some helpful commands that they can go to next, such as 'commands' and 'info'
-			echo('Other helpful commands to get you started:');
-			echo('+ \'commands\' - displays a list of commands by what category they fall within.');
-			echo('+ \'info\' <command> - typing info followed by a command will give you more information about that command, such as what it does and what information it requires you to input in order to function and what order it requires that information.');
+			util.echo('Other helpful commands to get you started:');
+			console.log();
+			util.echo('+ \'commands\' - displays a list of commands by what category they fall within.');
+			console.log();
+			util.echo('+ \'info\' <command> - typing info followed by a command will give you more information about that command, such as what it does and what information it requires you to input in order to function and what order it requires that information.');
 			console.log();
 		}
 	},
@@ -1309,18 +1168,18 @@ var commandMap = {
 					userData.renames[id] = newName;
 
 					console.log();
-					echo(`'${itm}' renamed to '${newName}'.`);
+					util.echo(`'${itm}' renamed to '${newName}'.`);
 					console.log();
 				}
 				else{
 					console.log();
-					echo('An item with that name already exists.');
+					util.echo('An item with that name already exists.');
 					console.log();
 				}
 			}
 			else{
 				console.log();
-				echo('That item does not exist.');
+				util.echo('That item does not exist.');
 				console.log();
 			}
 		}
@@ -1336,10 +1195,10 @@ function run(){
 		console.log('\n !=============== [Welcome to Test RPG!] ===============!');
 		commandMap['profiles'].func('');
 		//console.log('   Use the \'new\' command followed by your desired\n   username to start a new game or \'load\' followed by the\n   username of your desired profile to load a previously\n   saved game.\n');
-		echo('Use the \'new\' command followed by your desired username to start a new game or \'load\' followed by the username of your desired profile to load a previously saved game.');
+		util.echo('Use the \'new\' command followed by your desired username to start a new game or \'load\' followed by the username of your desired profile to load a previously saved game.');
 		console.log();
 		//console.log('   For help, use \'commands\' to display a list of\n   commands that can be used in the game.\n');
-		echo('For help, use \'commands\' to display a list of commands that can be used in the game.');
+		util.echo('For help, use \'commands\' to display a list of commands that can be used in the game.');
 		console.log();
 	}
 
@@ -1381,21 +1240,21 @@ function run(){
 				}
 				//console.log(`\n   That command is not ready yet. ${hasCooldown} ${unit} left until ready.\n`);
 				console.log();
-				echo(`That command is not ready yet. ${hasCooldown} ${unit} left until ready.`);
+				util.echo(`That command is not ready yet. ${hasCooldown} ${unit} left until ready.`);
 				console.log();
 			}
 		}
 		else{
 			//console.log('\n   That command is not allowed right now. Create or load a profile, then try again.\n');
 			console.log();
-			echo('That command is not allowed right now. Create or load a profile, then try again.');
+			util.echo('That command is not allowed right now. Create or load a profile, then try again.');
 			console.log();
 		}
 	}
 	else{
 		//console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
 		console.log();
-		echo(`'${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.`);
+		util.echo(`'${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.`);
 		console.log();
 		sessionData.linesSince++;
 	}

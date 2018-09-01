@@ -3,24 +3,24 @@
 	"levels":{
 		"LEVEL_CAP":10,
 		"1":{
-			"XP_CAP":"100"
+			"XP_CAP":100
 		},
 		"2":{
-			"XP_CAP":"200"
+			"XP_CAP":200
 		},
 		"3":{
-			"XP_CAP":"400"
+			"XP_CAP":400
 		},
 		"4":{
-			"XP_CAP":"800"
+			"XP_CAP":800
 		},
 		"5":{
-			"XP_CAP":"1600"
+			"XP_CAP":1600
 		}
 	},
 	"equipment":{
 		"helmet":{
-			"ITEM_COUNT_MAX":2
+			"ITEM_COUNT_MAX":1
 		},
 		"chest":{
 			"ITEM_COUNT_MAX":1
@@ -74,5 +74,71 @@
 				"0":"save"
 			}
 		}
+	},
+	"defaultProfile":{
+		"gen":{
+			"nam":null,
+			"dat":null,
+			"dt2":null,
+			"sve":null,
+			"lvl":1,
+			"hp":100,
+			"hpm":100,
+			"ap":100,
+			"apm":100,
+			"exp":0,
+			"gld":5,
+			"slv":50,
+			"kll":0,
+			"dth":0,
+			"poi":5,
+			"apc":null
+		},
+		"inv":{
+			"1":{
+				"qty":1
+			},
+			"5":{
+				"qty":1
+			},
+			"12":{
+				"qty":2
+			},
+			"15":{
+				"qty":1
+			},
+			"14":{
+				"qty":3
+			},
+			"16":{
+				"qty":3
+			},
+			"17":{
+				"qty":2
+			}
+		},
+		"stats":{
+			"strength":0,
+			"stamina":0,
+			"resilience":0,
+			"intellect":0,
+			"speed":0,
+			"agility":0
+		},
+		"equipment":{
+			"helmet":{},
+			"chest":{},
+			"pants":{},
+			"boots":{},
+			"weapon":{},
+			"ring":{}
+		},
+		"cooldowns":{},
+		"buffs":{},
+		"location":{
+			"prv":"Xymborex",
+			"loc":"Dysphoria"
+		},
+		"renames":{}
 	}
 }

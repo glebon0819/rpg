@@ -749,7 +749,8 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(10)){
-				inv.addToInv(3, 1, true);
+				//inv.addToInv(3, 1, true);
+				inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fsh), 1, true);
 				changeAP(-10);
 			}
 			else{
@@ -1120,13 +1121,6 @@ var commandMap = {
 				util.echo('That item does not exist.');
 				console.log();
 			}
-		}
-	},
-
-
-	'enemy' : {
-		'func' : function(cmd){
-			util.echo(`A ${util.randPick(locations[userData.location.prv].loc[userData.location.loc].cre)} has spawned!`);
 		}
 	}
 };

@@ -13,8 +13,8 @@
 		"typ":"misc"
 	},
 	"3":{
-		"nam":"Fish",
-		"val":1,
+		"nam":"Bass",
+		"val":0.25,
 		"typ":"food",
 		"effects":{
 			"hp":5
@@ -129,6 +129,22 @@
 		"arm":0,
 		"stats":{
 			"intellect":1
+		}
+	},
+	"18":{
+		"nam":"Catfish",
+		"val":0.5,
+		"typ":"food",
+		"effects":{
+			"hp":10
+		}
+	},
+	"19":{
+		"nam":"Trout",
+		"val":0.25,
+		"typ":"food",
+		"effects":{
+			"hp":5
 		}
 	}
 }

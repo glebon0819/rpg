@@ -1,6 +1,6 @@
 {
 	"Nostromo":{
-		"map":null,
+		"map":"./library/resources/maps/Dysphoria.txt",
 		"cre":{},
 		"loc":{
 			"Dysphoria":{
@@ -9,6 +9,11 @@
 					"Goblin":0.5,
 					"Hobgoblin":0.3,
 					"Hemogoblin":0.2
+				},
+				"fsh":{
+					"3":0.6,
+					"19":0.3,
+					"18":0.1
 				}
 			}
 		}

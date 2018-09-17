@@ -6,6 +6,7 @@ const inv = require('./library/modules/inv');
 var userData = {},
 	items = {},
 	monsters = {},
+	locations = {},
 	config = {};
 
 var replenish = null;
@@ -1119,6 +1120,13 @@ var commandMap = {
 				util.echo('That item does not exist.');
 				console.log();
 			}
+		}
+	},
+
+
+	'enemy' : {
+		'func' : function(cmd){
+			util.echo(`A ${util.randPick(locations[userData.location.prv].loc[userData.location.loc].cre)} has spawned!`);
 		}
 	}
 };

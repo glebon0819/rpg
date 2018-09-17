@@ -1,10 +1,16 @@
 {
-	"Xymborex":{
-		"Dysphoria":{
-			"typ":"city",
-			"min":false,
-			"chp":false,
-			"mrk":true
+	"Nostromo":{
+		"map":null,
+		"cre":{},
+		"loc":{
+			"Dysphoria":{
+				"typ":"city",
+				"cre":{
+					"Goblin":0.5,
+					"Hobgoblin":0.3,
+					"Hemogoblin":0.2
+				}
+			}
 		}
 	}
 }

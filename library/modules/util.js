@@ -66,3 +66,22 @@ exports.echo = function(string){
 		lastI = end;
 	}
 }
+
+// returns the key to a random property of an input object where the values are the properties' probabilities of being picked
+exports.randPick = function(object){
+
+	var num = Math.random(),
+        s = 0,
+        res = null,
+        found = false;
+
+    Object.keys(object).forEach(function(element){
+        s += parseFloat(object[element]);
+        if (num < s && !found) {
+        	res = element;
+            found = true;
+        }
+    });
+
+	return res;
+}

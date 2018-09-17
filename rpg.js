@@ -936,7 +936,9 @@ var commandMap = {
 
 			if(command.length > 0){
 				if(cmdExists(command)){
-					console.log(`\n   ${command} ${commandMap[command].des}\n`);
+					console.log();
+					util.echo(`${command} ${commandMap[command].des}\n`);
+					console.log();
 				}
 				else{
 					console.log(`\n   That command does not exist.\n`);
@@ -1121,6 +1123,15 @@ var commandMap = {
 				util.echo('That item does not exist.');
 				console.log();
 			}
+		}
+	},
+
+	// displays a map of the current province to the player
+	'map' : {
+		'grp' : 'Location',
+		'des' : '- displays a map of the province you are currently in.',
+		'func' : function(cmd){
+			util.render(locations[userData.location.prv].map);
 		}
 	}
 };

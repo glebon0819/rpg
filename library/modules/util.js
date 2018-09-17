@@ -1,4 +1,7 @@
+const fs = require('fs');
+
 exports.getTimestamp = function(readable){
+
 	var now = new Date();
 	var dd = now.getDate();
 	var mm = now.getMonth()+1;
@@ -37,20 +40,25 @@ exports.getTimestamp = function(readable){
 		timestamp = (dd + mm + yyyy + hh + mm2 + ss + mmm);
 	}
 	return timestamp;
+
 }
 
 // logs strings to the console while maintaining the predefined character width of the game
-exports.echo = function(string){
+exports.echo = function(string, padding){
+
 	var lastI = 0;
 	var end;
-	for(var i = 0; i < Math.ceil(string.length / 54); i++){
+	if(padding === undefined){
+		var padding = '   ';
+	}
+	for(var i = 0; i < Math.ceil(string.length / (57 - padding.length)); i++){
 		var endFound = false;
 		var char;
-		end = lastI + 53;
+		end = lastI + (56 - padding.length);
 		while(!endFound){
 			if(end === lastI){
 				endFound = true;
-				end = lastI + 53;
+				end = lastI + (56 - padding.length);
 			}
 			else{
 				char = string.charAt(end);
@@ -62,9 +70,10 @@ exports.echo = function(string){
 				}
 			}
 		}
-		console.log(`   ${string.substring(lastI, end).trim()}`);
+		console.log(padding + string.substring(lastI, end).trim());
 		lastI = end;
 	}
+
 }
 
 // returns the key to a random property of an input object where the values are the properties' probabilities of being picked
@@ -84,4 +93,16 @@ exports.randPick = function(object){
     });
 
 	return res;
+
+}
+
+// prints contents of a text file to the console
+exports.render = function(path){
+
+	var contents = fs.readFileSync(path, 'utf8');
+
+	console.log();
+	module.exports.echo(contents.replace(/\r?\n|\r/g, ""), ' ');
+	console.log();
+
 }

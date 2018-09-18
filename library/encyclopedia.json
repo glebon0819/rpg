@@ -54,7 +54,10 @@
 	"9":{
 		"nam":"Mushroom",
 		"val":0.05,
-		"typ":"food"
+		"typ":"food",
+		"effects":{
+			"hp":2
+		}
 	},
 	"10":{
 		"nam":"Carrot",
@@ -146,5 +149,23 @@
 		"effects":{
 			"hp":5
 		}
+	},
+	"20":{
+		"nam":"Bluegill",
+		"val":0.01,
+		"typ":"misc"
+	},
+	"21":{
+		"nam":"Frog",
+		"val":0.15,
+		"typ":"food",
+		"effects":{
+			"hp":4
+		}
+	},
+	"22":{
+		"nam":"Old Boot",
+		"val":0.01,
+		"typ":"misc"
 	}
 }

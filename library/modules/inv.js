@@ -1,3 +1,5 @@
+const util = require('./util.js');
+
 var userData = {};
 var items = {};
 
@@ -28,7 +30,9 @@ exports.addToInv = function(num, qty, ech){
 
 	// prints to screen message notifying player that an item was added to their inventory if the echo condition is true
 	if(ech === true){
-		//console.log(`\n   ${qty} x '${items[num].nam}' added to inventory.\n`);
+		console.log();
+		util.echo(`${qty} x '${items[num].nam}' added to inventory.`);
+		console.log();
 	}
 }
 

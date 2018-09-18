@@ -365,6 +365,16 @@ function hasNewName(og){
 	return newName;
 }
 
+// checks if a province exists
+function isProvince(prv){
+	return locations.hasOwnProperty(prv);
+}
+
+// checks if a location exists within a province
+function isLocation(loc, prv){
+	return locations[prv].loc.hasOwnProperty(loc);
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -731,7 +741,7 @@ var commandMap = {
 		'func' : function(cmd){
 			
 			if(checkAP(5)){
-				inv.addToInv(6, 2, true);
+				inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 2, true);
 				changeAP(-5);
 			}
 			else{
@@ -1131,7 +1141,45 @@ var commandMap = {
 		'grp' : 'Location',
 		'des' : '- displays a map of the province you are currently in.',
 		'func' : function(cmd){
+			console.log();
+			util.echo(`${userData.location.prv} Province:`);
 			util.render(locations[userData.location.prv].map);
+			/*util.echo('=======================================================', ' ');
+			util.render('./library/resources/maps/key.txt');*/
+		}
+	},
+
+	// displays current province (quadrant) and specific location of the player
+	'location' : {
+		'grp' : 'Location',
+		'des' : '- displays the current province and specific location within that province that you are in.',
+		'func' : function(cmd){
+			console.log();
+			util.echo(`${userData.location.loc}, ${userData.location.prv} Province`);
+			console.log();
+		}
+	},
+
+	// moves the player to a different location
+	'travel' : {
+		'grp' : 'Location',
+		'des' : '- moves you to a different location.',
+		'func' : function(cmd){
+			var destPrv = readlineSync.question(' Province: ');
+			if(isProvince(destPrv)){
+				var destLoc = readlineSync.question(` Location within ${destPrv}: `);
+				if(isLocation(destLoc, destPrv)){
+					userData.location.prv = destPrv;
+					userData.location.loc = destLoc;
+					console.log('\n   Travelled.\n');
+				}
+				else{
+					console.log('\n   That location does not exist within that province.\n');
+				}
+			}
+			else{
+				console.log('\n   That province does not exist.\n');
+			}
 		}
 	}
 };

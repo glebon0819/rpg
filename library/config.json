@@ -1,4 +1,5 @@
 {
+	"GAME_CHAR_WIDTH":56,
 	"BUFF_STACK_MAX":2,
 	"levels":{
 		"LEVEL_CAP":10,

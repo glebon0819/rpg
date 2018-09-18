@@ -6,15 +6,31 @@
 			"Dysphoria":{
 				"typ":"city",
 				"cre":{
-					"Goblin":0.5,
-					"Hobgoblin":0.3,
-					"Hemogoblin":0.2
+					"Thief":0.5,
+					"Thug":0.5
 				},
 				"fsh":{
-					"3":0.6,
-					"19":0.3,
-					"18":0.1
+					"20":0.6,
+					"21":0.2,
+					"22":0.05,
+					"2":0.05,
+					"19":0.05,
+					"18":0.05
+				},
+				"min":false,
+				"chp":false,
+				"fge":{
+					"22":0.6,
+					"9":0.4
 				}
+			},
+			"Watchtower":{
+				"typ":"fort",
+				"cre":{},
+				"fsh":false,
+				"min":false,
+				"chp":false,
+				"fge":false
 			}
 		}
 	}

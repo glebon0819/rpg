@@ -72,7 +72,12 @@
 		"adventure":{
 			"white":{},
 			"black":{
-				"0":"save"
+				"0":"save",
+				"1":"travel",
+				"2":"mine",
+				"3":"fish",
+				"4":"forage",
+				"5":"chop"
 			}
 		}
 	},

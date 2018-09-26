@@ -18,7 +18,8 @@ var sessionData = {
 	'lastCmd' : '',
 	// tracks the number of lines entered since the last command
 	'linesSince' : 0,
-	'mode' : 'start'
+	'mode' : 'start',
+	'enemy' : null
 };
 
 // function that loads the library files
@@ -296,13 +297,13 @@ function die(){
 // adds item to player's equipment, removing it from their inventory
 function equip(og){
 	// checks that the max number of items for this slot will not be surpassed
-	var item_count = 0;
+	var itemCount = 0;
 	for(var item in userData.equipment[items[og].slt]){
-		item_count += userData.equipment[items[og].slt][item].qty;
+		itemCount += userData.equipment[items[og].slt][item].qty;
 	}
 
 	//if(Object.keys(userData.equipment[items[og].slt]).length < config.equipment[items[og].slt].ITEM_COUNT_MAX){
-	if(item_count < config.equipment[items[og].slt].ITEM_COUNT_MAX){
+	if(itemCount < config.equipment[items[og].slt].ITEM_COUNT_MAX){
 		// adds the item to the appropriate equipment slot
 		if(userData.equipment[items[og].slt][og] === undefined){
 			userData.equipment[items[og].slt][og] = { qty : 1 };
@@ -727,11 +728,37 @@ var commandMap = {
 		}
 	},
 	// continues your latest battle
-	'adv' : {
-		'grp' : 'Miscellaneous',
+	'adventure' : {
+		'grp' : 'Adventure',
 		'des' : '- Begins an adventure.',
 		'func' : function(cmd){
-			console.log('\n   You\'re now on an adventure.\n');
+			if(sessionData.enemy === null){
+				sessionData.mode = 'adventure';
+				sessionData.enemy = util.randPick(locations[userData.location.prv].loc[userData.location.loc].cre);
+
+				console.log();
+				util.echo(`A ${sessionData.enemy} has appeared! You are now in combat.`);
+				console.log();
+			}
+			else{
+				console.log('\n   You attack!\n');
+			}
+		}
+	},
+	'adv' : {
+		'grp' : 'Adventure',
+		'des' : '- See \'adventure\'.',
+		'func' : function(cmd){
+			commandMap['adventure'].func(cmd);
+		}
+	},
+	'flee' : {
+		'grp' : 'Adventure',
+		'des' : '- Flees the current adventure.',
+		'func' : function(cmd){
+			sessionData.enemy = null;
+			sessionData.mode = 'general';
+			console.log('\n   You flee the battle.\n');
 		}
 	},
 	// forages in the local area, adding berries to your inventory
@@ -1171,7 +1198,7 @@ var commandMap = {
 				if(isLocation(destLoc, destPrv)){
 					userData.location.prv = destPrv;
 					userData.location.loc = destLoc;
-					console.log('\n   Travelled.\n');
+					console.log('\n   Traveled.\n');
 				}
 				else{
 					console.log('\n   That location does not exist within that province.\n');
@@ -1209,22 +1236,22 @@ function run(){
 
 	var commands = command.split(' ');
 
-	var root_command = commands[0];
-	//commandMap[root_command].func(commands);
+	var rootCommand = commands[0];
+	//commandMap[rootCommand].func(commands);
 
-	// check if root_command is an actual command
-	if(cmdExists(root_command)){
+	// check if rootCommand is an actual command
+	if(cmdExists(rootCommand)){
 
 		// check if the command is allowed in the current mode
-		if(checkMode(root_command)){
+		if(checkMode(rootCommand)){
 
 			// check for cooldown on command
-			var hasCooldown = checkCooldown(root_command);
+			var hasCooldown = checkCooldown(rootCommand);
 			if(hasCooldown === false){
 
 				// if none of the above, run command
-				commandMap[root_command].func(commands);
-				sessionData.lastCmd = root_command;
+				commandMap[rootCommand].func(commands);
+				sessionData.lastCmd = rootCommand;
 			}
 			else{
 				var unit = 'seconds';
@@ -1250,9 +1277,9 @@ function run(){
 		}
 	}
 	else{
-		//console.log(`\n   '${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
+		//console.log(`\n   '${rootCommand}' is not recognized as a command. For a list of valid commands, type 'commands'.\n`);
 		console.log();
-		util.echo(`'${root_command}' is not recognized as a command. For a list of valid commands, type 'commands'.`);
+		util.echo(`'${rootCommand}' is not recognized as a command. For a list of valid commands, type 'commands'.`);
 		console.log();
 		sessionData.linesSince++;
 	}

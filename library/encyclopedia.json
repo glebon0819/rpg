@@ -8,8 +8,8 @@
 		}
 	},
 	"2":{
-		"nam":"Log",
-		"val":1,
+		"nam":"Oak Log",
+		"val":0.25,
 		"typ":"misc"
 	},
 	"3":{
@@ -166,6 +166,11 @@
 	"22":{
 		"nam":"Old Boot",
 		"val":0.01,
+		"typ":"misc"
+	},
+	"23":{
+		"nam":"Pine Log",
+		"val":0.25,
 		"typ":"misc"
 	}
 }

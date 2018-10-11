@@ -463,7 +463,7 @@ var commandMap = {
 					var data = JSON.parse(json);
 					userData = data;
 
-					inv.setInventory(userData.inv);
+					inv.setUserData(userData);
 
 					sessionData.mode = 'general';
 					
@@ -745,6 +745,7 @@ var commandMap = {
 			}
 		}
 	},
+	// alias for 'adventure'
 	'adv' : {
 		'grp' : 'Adventure',
 		'des' : '- See \'adventure\'.',
@@ -752,6 +753,7 @@ var commandMap = {
 			commandMap['adventure'].func(cmd);
 		}
 	},
+	// flees your current adventure, putting the user back in general mode and resetting their session's enemy property
 	'flee' : {
 		'grp' : 'Adventure',
 		'des' : '- Flees the current adventure.',
@@ -767,15 +769,13 @@ var commandMap = {
 		'des' : '- Forages in the local area, placing yielded food in your inventory.',
 		'func' : function(cmd){
 			
-			if(checkAP(5)){
+			if(checkAP(10)){
 				inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 2, true);
-				changeAP(-5);
+				changeAP(-10);
 			}
 			else{
 				console.log('\n   Insufficient AP.\n');
 			}
-
-			// create cooldown
 			//createCooldown('forage', 20);
 		}
 	},
@@ -786,16 +786,19 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(10)){
-				//inv.addToInv(3, 1, true);
-				inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fsh), 1, true);
-				changeAP(-10);
+				if(locations[userData.location.prv].loc[userData.location.loc].fsh !== false){
+					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fsh), 1, true);
+					changeAP(-10);
+				}
+				else{
+					console.log();
+					util.echo('There is nowhere to fish here. Travel somewhere else to fish.');
+					console.log();
+				}
 			}
 			else{
 				console.log('\n   Insufficient AP.\n');
 			}
-
-			// create cooldown
-			//createCooldown('fish', 30);
 		}
 	},
 	// chops down in the local area, adding logs to your inventory
@@ -805,15 +808,19 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(20)){
-				inv.addToInv(2, 1, true);
-				changeAP(-20);
+				if(locations[userData.location.prv].loc[userData.location.loc].chp !== false){
+					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].chp), 1, true);
+					changeAP(-20);
+				}
+				else{
+					console.log();
+					util.echo('There is nothing to chop here. Travel somewhere else to chop.');
+					console.log();
+				}
 			}
 			else{
 				console.log('\n   Insufficient AP.\n');
 			}
-
-			// create cooldown
-			//createCooldown('chop', 30);
 		}
 	},
 	// mines down in the local area, adding iron ore to your inventory
@@ -823,15 +830,19 @@ var commandMap = {
 		'func' : function(cmd){
 
 			if(checkAP(50)){
-				inv.addToInv(4, 1, true);
-				changeAP(-50);
+				if(locations[userData.location.prv].loc[userData.location.loc].min !== false){
+					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].min), 1, true);
+					changeAP(-50);
+				}
+				else{
+					console.log();
+					util.echo('There is nothing to mine here. Travel somewhere else to mine.');
+					console.log();
+				}
 			}
 			else{
 				console.log('\n   Insufficient AP.\n');
 			}
-
-			// create cooldown
-			//createCooldown('mine', 60);
 		}
 	},
 	// saves your user data to a JSON file in the 'saves' folder
@@ -1181,9 +1192,41 @@ var commandMap = {
 		'grp' : 'Location',
 		'des' : '- displays the current province and specific location within that province that you are in.',
 		'func' : function(cmd){
-			console.log();
-			util.echo(`${userData.location.loc}, ${userData.location.prv} Province`);
-			console.log();
+			cmd.shift();
+
+			if(cmd != '++'){
+				console.log();
+				util.echo(`${userData.location.loc}, ${userData.location.prv} Province`);
+				console.log();
+
+				if(cmd == '+'){
+					util.echo(`Fishing: ${locations[userData.location.prv].loc[userData.location.loc].fsh !== false ? 'Yes' : 'No'}`);
+					util.echo(`Mining: ${locations[userData.location.prv].loc[userData.location.loc].min !== false ? 'Yes' : 'No'}`);
+					util.echo(`Foraging: ${locations[userData.location.prv].loc[userData.location.loc].frg !== false ? 'Yes' : 'No'}`);
+					util.echo(`Chopping: ${locations[userData.location.prv].loc[userData.location.loc].chp !== false ? 'Yes' : 'No'}`);
+					console.log();
+				}
+			}
+			else{
+				var province = readlineSync.question(' Province: ');
+
+				if(isProvince(province)){
+					var location = readlineSync.question(' Location: ');
+					if(isLocation(location, province)){
+						console.log();
+						util.echo(`${location}, ${province} Province`);
+						console.log();
+						util.echo(`Fishing: ${locations[province].loc[location].fsh !== false ? 'Yes' : 'No'}`);
+						util.echo(`Mining: ${locations[province].loc[location].min !== false ? 'Yes' : 'No'}`);
+						util.echo(`Foraging: ${locations[province].loc[location].frg !== false ? 'Yes' : 'No'}`);
+						util.echo(`Chopping: ${locations[province].loc[location].chp !== false ? 'Yes' : 'No'}`);
+						console.log();
+					}
+				}
+				else{
+					console.log('\n   That is not a province.\n');
+				}
+			}
 		}
 	},
 

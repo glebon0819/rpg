@@ -4,7 +4,7 @@
 		"cre":{},
 		"loc":{
 			"Dysphoria":{
-				"typ":"city",
+				"typ":"village",
 				"cre":{
 					"Thief":0.5,
 					"Thug":0.5
@@ -18,10 +18,14 @@
 					"18":0.05
 				},
 				"min":false,
-				"chp":false,
+				"chp":{
+					"2":0.75,
+					"23":0.25
+				},
 				"fge":{
-					"22":0.6,
-					"9":0.4
+					"9":0.4,
+					"6":0.3,
+					"7":0.3
 				}
 			},
 			"Watchtower":{

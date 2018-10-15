@@ -1,6 +1,6 @@
 const fs = require('fs');
 const util = require('./util');
-const inv = require('./inv');
+const itemMod = require('./items');
 
 var userData = {};
 var items = {};
@@ -60,6 +60,17 @@ function die(){
 	console.log('   -  You have died! :(\n');
 }
 
+// returns whether a string is a stat
+exports.isStat = function(str){
+	var isStat = false;
+	Object.keys(userData.stats).forEach(stat => {
+		if(stat == str){
+			isStat = true;
+		}
+	});
+	return isStat;
+}
+
 // adds a number to AP (including negatives)
 // if AP is > max, sets AP to max; if AP < 0, sets AP to 0
 exports.changeAp = function(val, ech){
@@ -113,7 +124,7 @@ exports.fixAp = function(){
 exports.consume = function(itm){
 	// get id of item from inventory and use it to access item's description in encyclopedia
 	//var id = userData.inv[itm];
-	var id = inv.isInInv(itm);
+	var id = itemMod.isInInv(itm);
 
 	if(id !== false){
 
@@ -153,7 +164,7 @@ exports.consume = function(itm){
 			}
 		}*/
 
-		inv.remFromInv(id, 1);
+		itemMod.remFromInv(id, 1);
 
 		var effects = items[id].effects;
 		for(var effect in effects){
@@ -216,7 +227,7 @@ exports.eat = function(cmd){
 	// check if item is defined
 	if(itm.length > 0){
 		// check if is in inventory
-		var id = inv.isInInv(itm);
+		var id = itemMod.isInInv(itm);
 		if(id !== false){
 			// check if is food
 			if(items[id].typ == 'food'){
@@ -249,7 +260,7 @@ exports.drink = function(cmd){
 	// check if item is defined
 	if(itm.length > 0){
 		// check if is in inventory
-		var id = inv.isInInv(itm);
+		var id = itemMod.isInInv(itm);
 		if(id !== false){
 			// check if is food
 			if(items[id].typ == 'potion' || items[id].typ == 'beverage'){
@@ -272,5 +283,43 @@ exports.drink = function(cmd){
 	}
 	else{
 		console.log('\n   No item provided to drink.\n');
+	}
+}
+
+exports.stats = function(cmd){
+	var stats = Object.keys(userData.stats);
+	console.log(`\n   ${userData.gen.nam}'s Stats:\n`);
+	stats.forEach(stat => {
+		console.log(`   + ${stat}: ${userData.stats[stat]}`);
+	});
+	console.log();
+}
+
+exports.assign = function(cmd){
+	cmd.shift();
+	if(Object.keys(cmd).length === 2){
+		if(module.exports.isStat(cmd[Object.keys(cmd)[1]])){
+			if(parseInt(cmd[Object.keys(cmd)[0]]) > 0){
+				if(userData.gen.poi >= parseInt(cmd[Object.keys(cmd)[0]])){
+					userData.stats[cmd[Object.keys(cmd)[1]]] += parseInt(cmd[Object.keys(cmd)[0]]);
+					userData.gen.poi -= parseInt(cmd[Object.keys(cmd)[0]]);
+					console.log(`\n   '${cmd[Object.keys(cmd)[1]]}' changed to ${userData.stats[cmd[Object.keys(cmd)[1]]]}.\n`);
+				}
+				else{
+					console.log('\n   Insufficient unassigned stat points to make that assignment.\n');
+				}
+			}
+			else{
+				console.log('\n   Use a number.\n');
+			}
+		}
+		else{
+			console.log('\n   That is not a stat.\n');
+		}
+	}
+	else{
+		console.log();
+		util.echo('Arguments improperly given. Give a stat followed by the number of points you would like to assign to that stat.');
+		console.log();
 	}
 }

@@ -1,7 +1,7 @@
 const readlineSync = require('readline-sync');
 const fs = require('fs');
 const util = require('./library/modules/util');
-const inv = require('./library/modules/inv');
+const itemMod = require('./library/modules/items');
 const loc = require('./library/modules/loc');
 const stats = require('./library/modules/stats');
 
@@ -31,7 +31,8 @@ function loadResources(){
 	locations = JSON.parse(fs.readFileSync('./library/atlas.json', 'utf8'));
 	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
 
-	inv.setItems(items);
+	itemMod.setItems(items);
+	itemMod.setConfig(config);
 	loc.setLocations(locations);
 	stats.setItems(items);
 	stats.setConfig(config);
@@ -159,98 +160,9 @@ function cleanUp(){
 	}
 }
 
-// returns whether a string is a stat
-function isStat(str){
-	var isStat = false;
-	Object.keys(userData.stats).forEach(stat => {
-		if(stat == str){
-			isStat = true;
-		}
-	});
-	return isStat;
-}
-
-
-
-
-
-
-
-// adds item to player's equipment, removing it from their inventory
-function equip(og){
-	// checks that the max number of items for this slot will not be surpassed
-	var itemCount = 0;
-	for(var item in userData.equipment[items[og].slt]){
-		itemCount += userData.equipment[items[og].slt][item].qty;
-	}
-
-	//if(Object.keys(userData.equipment[items[og].slt]).length < config.equipment[items[og].slt].ITEM_COUNT_MAX){
-	if(itemCount < config.equipment[items[og].slt].ITEM_COUNT_MAX){
-		// adds the item to the appropriate equipment slot
-		if(userData.equipment[items[og].slt][og] === undefined){
-			userData.equipment[items[og].slt][og] = { qty : 1 };
-		}
-		else{
-			userData.equipment[items[og].slt][og].qty++;
-		}
-
-		// goes through each of the item's stat increases and boosts the user's stats
-		for(var stat in items[og].stats){
-			userData.stats[stat] += items[og].stats[stat];
-		}
-	
-		// removes the item from player inventory
-		inv.remFromInv(og, 1);
-	}
-	else{
-		throw `Number of items allowed in your ${items[og].slt} slot has been reached. Unequip an item in that slot to free up room.`;
-	}
-}
-
-// removes an item from player's equipment, adding it to their inventory and removing any stat increases
-function unequip(og){
-	inv.addToInv(og, 1, false);
-
-	// goes through each of the item's stat increases and reduces the user's stats
-	for(var stat in items[og].stats){
-		userData.stats[stat] -= items[og].stats[stat];
-	}
-
-	if(userData.equipment[items[og].slt][og].qty > 1){
-		userData.equipment[items[og].slt][og].qty--;
-	}
-	else{
-		delete userData.equipment[items[og].slt][og];
-	}
-}
-
-// returns the slot an item is in if an item is equipped, false if not
-function isInEqp(itm){
-	var isInEqp = false;
-	Object.keys(userData.equipment).forEach(slot => {
-		for(var item in userData.equipment[slot]){
-			if(item == itm){
-				isInEqp = slot;
-			}
-		}
-	});
-	return isInEqp;
-}
-
-// checks if item has been renamed; if so returns its new name, if not returns false
-function hasNewName(og){
-	var newName = false;
-
-	if(userData.renames[og] !== undefined){
-		newName = userData.renames[og];
-	}
-
-	return newName;
-}
-
 // sets the userData object for each of the game's modules
 function setUserData(data){
-	inv.setUserData(data);
+	itemMod.setUserData(data);
 	loc.setUserData(data);
 	stats.setUserData(data);
 }
@@ -428,7 +340,7 @@ var commandMap = {
 				console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
 				var itms = Object.keys(userData.inv);
 				itms.forEach(item => {
-					console.log('   ' + userData.inv[item].qty + ` x ${(hasNewName(item) !== false ? hasNewName(item) : items[item].nam)}`);
+					console.log('   ' + userData.inv[item].qty + ` x ${(itemMod.hasNewName(item) !== false ? itemMod.hasNewName(item) : items[item].nam)}`);
 				});
 				console.log('\n ========================================================\n');
 			}
@@ -452,11 +364,11 @@ var commandMap = {
 		'func' : function(cmd){
 			cmd.shift();
 			var item = cmd.join(' ');
-			var id = inv.itmExists(item);
+			var id = itemMod.itmExists(item);
 
 			if(item.length > 0){
 				if(id !== false){
-					inv.remFromInv(id, 1)
+					itemMod.remFromInv(id, 1)
 					console.log();
 					util.echo(`'${item}' dropped from inventory.`);
 					console.log();
@@ -476,47 +388,13 @@ var commandMap = {
 	'stats' : {
 		'grp' : 'Stats',
 		'des' : '- Displays your stats.',
-		'func' : function(cmd){
-			var stats = Object.keys(userData.stats);
-			console.log(`\n   ${userData.gen.nam}'s Stats:\n`);
-			stats.forEach(stat => {
-				console.log(`   + ${stat}: ${userData.stats[stat]}`);
-			});
-			console.log();
-		}
+		'func' : stats.stats
 	},
 	// used to assign points to different stats
 	'assign' : {
 		'grp' : 'Stats',
 		'des' : '<number of points> <stat to assign points to> - Assigns unassigned stat points.',
-		'func' : function(cmd){
-			cmd.shift();
-			if(Object.keys(cmd).length === 2){
-				if(isStat(cmd[Object.keys(cmd)[1]])){
-					if(parseInt(cmd[Object.keys(cmd)[0]]) > 0){
-						if(userData.gen.poi >= parseInt(cmd[Object.keys(cmd)[0]])){
-							userData.stats[cmd[Object.keys(cmd)[1]]] += parseInt(cmd[Object.keys(cmd)[0]]);
-							userData.gen.poi -= parseInt(cmd[Object.keys(cmd)[0]]);
-							console.log(`\n   '${cmd[Object.keys(cmd)[1]]}' changed to ${userData.stats[cmd[Object.keys(cmd)[1]]]}.\n`);
-						}
-						else{
-							console.log('\n   Insufficient unassigned stat points to make that assignment.\n');
-						}
-					}
-					else{
-						console.log('\n   Use a number.\n');
-					}
-				}
-				else{
-					console.log('\n   That is not a stat.\n');
-				}
-			}
-			else{
-				console.log();
-				util.echo('Arguments improperly given. Give a stat followed by the number of points you would like to assign to that stat.');
-				console.log();
-			}
-		}
+		'func' : stats.assign
 	},
 	// shows the user general information about themself
 	'me' : {
@@ -587,7 +465,7 @@ var commandMap = {
 		'func' : function(cmd){
 			
 			if(stats.checkAp(10)){
-				inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 2, true);
+				itemMod.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 2, true);
 				stats.changeAp(-10);
 			}
 			else{
@@ -604,7 +482,7 @@ var commandMap = {
 
 			if(stats.checkAp(10)){
 				if(locations[userData.location.prv].loc[userData.location.loc].fsh !== false){
-					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fsh), 1, true);
+					itemMod.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fsh), 1, true);
 					stats.changeAp(-10);
 				}
 				else{
@@ -626,7 +504,7 @@ var commandMap = {
 
 			if(stats.checkAp(20)){
 				if(locations[userData.location.prv].loc[userData.location.loc].chp !== false){
-					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].chp), 1, true);
+					itemMod.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].chp), 1, true);
 					stats.changeAp(-20);
 				}
 				else{
@@ -648,7 +526,7 @@ var commandMap = {
 
 			if(stats.checkAp(50)){
 				if(locations[userData.location.prv].loc[userData.location.loc].min !== false){
-					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].min), 1, true);
+					itemMod.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].min), 1, true);
 					stats.changeAp(-50);
 				}
 				else{
@@ -733,14 +611,14 @@ var commandMap = {
 			cmd.shift();
 			var itm = cmd.join(' ');
 
-			if(isInEqp(itm) !== false || inv.isInInv(itm) !== false){
+			if(isInEqp(itm) !== false || itemMod.isInInv(itm) !== false){
 				var qty = 0;
-				var id = inv.itmExists(itm);
+				var id = itemMod.itmExists(itm);
 
 				if(isInEqp(itm) !== false){
 					qty = userData.equipment[isInEqp(itm)][itm].qty;
 				}
-				if(inv.isInInv(itm)){
+				if(itemMod.isInInv(itm)){
 					qty += userData.inv[id].qty;
 				}
 
@@ -849,12 +727,12 @@ var commandMap = {
 
 			if(item.length > 0){
 				// checks that the item given exists in the user's inventory
-				var id = inv.isInInv(item);
+				var id = itemMod.isInInv(item);
 				if(id !== false){
 					// checks that the item is equippable
 					if(items[id].slt !== undefined){
 						try{
-							equip(id);
+							itemMod.equip(id);
 							console.log(`\n   '${item}' equipped.\n`);
 						}
 						catch(err){
@@ -886,10 +764,10 @@ var commandMap = {
 
 			if(item.length > 0){
 				// get original id number, throw exception if cannot be found
-				var og = inv.itmExists(item);
+				var og = itemMod.itmExists(item);
 
 				if(og !== false){
-					unequip(og);
+					itemMod.unequip(og);
 					console.log(`\n   '${item}' removed from your equipment.\n`);
 				}
 				else{
@@ -910,7 +788,7 @@ var commandMap = {
 			for(var slot in userData.equipment){
 				console.log(`   ${slot}:`);
 				for(var itmId in userData.equipment[slot]){
-					util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(hasNewName(itmId) !== false ? hasNewName(itmId) : items[itmId].nam)}`);
+					util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(itemMod.hasNewName(itmId) !== false ? itemMod.hasNewName(itmId) : items[itmId].nam)}`);
 				}
 			}
 			console.log();
@@ -960,12 +838,12 @@ var commandMap = {
 			var itm = cmd.join(' ');
 
 			// verify that the item they chose to rename exists
-			var id = inv.itmExists(itm);
+			var id = itemMod.itmExists(itm);
 			if(id !== false){
 				var newName = readlineSync.question(' New name: ');
 
 				// verify that the new name is not already taken
-				if(inv.itmExists(newName) === false){
+				if(itemMod.itmExists(newName) === false){
 
 					// get the original ID number for the item 
 

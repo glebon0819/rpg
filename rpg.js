@@ -3,6 +3,7 @@ const fs = require('fs');
 const util = require('./library/modules/util');
 const inv = require('./library/modules/inv');
 const loc = require('./library/modules/loc');
+const stats = require('./library/modules/stats');
 
 var userData = {},
 	items = {},
@@ -32,6 +33,7 @@ function loadResources(){
 
 	inv.setItems(items);
 	loc.setLocations(locations);
+	stats.setConfig(config);
 }
 
 // function for retrieving saves from the save folder
@@ -373,6 +375,7 @@ function hasNewName(og){
 function setUserData(data){
 	inv.setUserData(data);
 	loc.setUserData(data);
+	stats.setUserData(data);
 }
 
 // maps commands to functions and includes data about commands
@@ -810,6 +813,7 @@ var commandMap = {
 				if(locations[userData.location.prv].loc[userData.location.loc].chp !== false){
 					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].chp), 1, true);
 					changeAP(-20);
+					stats.gainXp(40);
 				}
 				else{
 					console.log();

@@ -33,6 +33,7 @@ function loadResources(){
 
 	inv.setItems(items);
 	loc.setLocations(locations);
+	stats.setItems(items);
 	stats.setConfig(config);
 }
 
@@ -169,135 +170,11 @@ function isStat(str){
 	return isStat;
 }
 
-// removes item from inventory and applies its buffs and effects
-function consume(itm){
-	// get id of item from inventory and use it to access item's description in encyclopedia
-	//var id = userData.inv[itm];
-	var id = inv.isInInv(itm);
 
-	var itemBuffs = items[id].buffs;
-	if(itemBuffs !== undefined && Object.keys(itemBuffs).length > 0){
-		var userBuffCount = {};
-		var itemBuffCount = {};
 
-		// goes through each buff in user's data and makes sure its stack is not maxed out
-		for(var buff in userData.buffs){
 
-			if(userBuffCount[userData.buffs[buff].stat] !== undefined){
-				userBuffCount[userData.buffs[buff].stat]++;
-			}
-			else{
-				userBuffCount[userData.buffs[buff].stat] = 1;
-			}
-		}
 
-		// goes through each buff an item has and makes sure its consumption would not cause stats to exceed the maximum number allowed
-		for(var buff in itemBuffs){
-			if(itemBuffCount[buff] !== undefined){
-				itemBuffCount[buff]++;
-			}
-			else{
-				itemBuffCount[buff] = 1;
-			}
 
-			// if the number of buffs found for the current stat on the item plus the number of buffs already had by the user for that stat exceeds the maximum allowed, throw error
-			if((itemBuffCount[buff] + userBuffCount[buff]) > config.BUFF_STACK_MAX){
-				throw `You cannot stack more than ${config.BUFF_STACK_MAX} buffs for the same stat on top of one another.`;
-			}
-		}
-
-		for(var buff in itemBuffs){
-			createBuff(buff, itemBuffs[buff].pts, itemBuffs[buff].dur, itm);
-		}
-	}
-
-	inv.remFromInv(id, 1);
-
-	var effects = items[id].effects;
-	for(var effect in effects){
-		if(effect == 'hp'){
-			changeHP(effects[effect]);
-		}
-		else if(effect == 'ap'){
-			changeAP(effects[effect]);
-		}
-	}
-}
-
-// adds a number to AP (including negatives)
-// if AP is > max, sets AP to max; if AP < 0, sets AP to 0
-function changeAP(val){
-	userData.gen.ap += val;
-	if(userData.gen.ap >= userData.gen.apm){
-		userData.gen.ap = userData.gen.apm;
-	}
-	else if(userData.gen.ap < 0){
-		userData.gen.ap = 0;
-	}
-
-	// set the last time AP was changed to now
-	userData.gen.apc = util.getTimestamp(true);
-
-	//console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
-}
-
-function changeHP(val){
-	userData.gen.hp += val;
-	if(userData.gen.hp > userData.gen.hpm){
-		userData.gen.hp = userData.gen.hpm;
-		//clearInterval(replenish);
-	}
-	else if(userData.gen.hp < 0){
-		userData.gen.hp = 0;
-	}
-
-	console.log(`   ${(val > 0 ? '+' : '-')}  HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
-
-	if(userData.gen.hp === 0){
-		die();
-	}
-}
-
-// checks if AP is above or equal to a given value
-function checkAP(num){
-	fixAP();
-
-	return (userData.gen.ap >= num ? true : false);
-}
-
-// returns number of milliseconds that should elapse between AP points being regenerated
-function getAPIncrement(){
-	// default value for now
-	// eventually this value will be affected by the user's stats
-	return 3000;
-}
-
-// gets AP back up to where it is supposed to be (according to the increment and how many milliseconds have elapsed)
-function fixAP(){
-	if(userData.gen.ap < userData.gen.apm){
-		var lastTime = new Date(userData.gen.apc);
-		var currentTime = new Date(util.getTimestamp(true));
-		if((currentTime - lastTime) >= getAPIncrement()){
-			changeAP(Math.floor((currentTime - lastTime) / getAPIncrement()));
-		}
-	}
-}
-
-// kills the player, resetting their userData and sending them back into start mode
-function die(){
-	// retrieve their last save, autoincrement their death stat, then resave it
-	var data = JSON.parse(fs.readFileSync('./saves/' + userData.gen.dt2 + '.json', 'utf8'));
-	userData = data;
-	userData.gen.dth++;
-	//commandMap['save'].func();
-	fs.writeFileSync('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData));
-
-	userData = {};
-
-	sessionData.mode = 'start';
-
-	console.log('   -  You have died! :(\n');
-}
 
 // adds item to player's equipment, removing it from their inventory
 function equip(og){
@@ -659,75 +536,13 @@ var commandMap = {
 	'drink' : {
 		'grp' : 'Inventory',
 		'des' : '<beverage or potion item in inventory> - Drinks a beverage or potion, giving you any effects it has.',
-		'func' : function(cmd){
-			cmd.shift();
-			var itm = cmd.join(' ');
-
-			// check if item is defined
-			if(itm.length > 0){
-				// check if is in inventory
-				var id = inv.isInInv(itm);
-				if(id !== false){
-					// check if is food
-					if(items[id].typ == 'potion' || items[id].typ == 'beverage'){
-						// consume (which removes it from inventory and applies the buff/effect)
-						try{
-							console.log(`\n   You drink '${itm}'.\n`);
-							consume(itm);
-						}
-						catch(err){
-							console.log(`   Failed to drink '${itm}'. ${err}\n`);
-						}
-					}
-					else{
-						console.log('\n   You cannot drink that item.\n');
-					}
-				}
-				else{
-					console.log(`\n   '${itm}' not found in your inventory.\n`);
-				}
-			}
-			else{
-				console.log('\n   No item provided to drink.\n');
-			}
-		}
+		'func' : stats.drink
 	},
 	// can be used to consume food items
 	'eat' : {
 		'grp' : 'Inventory',
 		'des' : '<food item in inventory> - Eats a piece of food, giving you any effects it has.',
-		'func' : function(cmd){
-			cmd.shift();
-			var itm = cmd.join(' ');
-
-			// check if item is defined
-			if(itm.length > 0){
-				// check if is in inventory
-				var id = inv.isInInv(itm);
-				if(id !== false){
-					// check if is food
-					if(items[id].typ == 'food'){
-						// consume (which removes it from inventory and applies the buff/effect)
-						try{
-							console.log(`\n   You ate '${itm}'.\n`);
-							consume(itm);
-						}
-						catch(err){
-							console.log(`\n   Failed to eat '${itm}'. ${err}\n`);
-						}
-					}
-					else{
-						console.log('\n   You cannot eat that item.\n');
-					}
-				}
-				else{
-					console.log(`\n   '${itm}' not found in your inventory.\n`);
-				}
-			}
-			else{
-				console.log('\n   No item provided to eat.\n');
-			}
-		}
+		'func' : stats.eat
 	},
 	// continues your latest battle
 	'adventure' : {
@@ -771,9 +586,9 @@ var commandMap = {
 		'des' : '- Forages in the local area, placing yielded food in your inventory.',
 		'func' : function(cmd){
 			
-			if(checkAP(10)){
+			if(stats.checkAp(10)){
 				inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 2, true);
-				changeAP(-10);
+				stats.changeAp(-10);
 			}
 			else{
 				console.log('\n   Insufficient AP.\n');
@@ -787,10 +602,10 @@ var commandMap = {
 		'des' : '- Fishes in the local area, placing yielded fish in your inventory.',
 		'func' : function(cmd){
 
-			if(checkAP(10)){
+			if(stats.checkAp(10)){
 				if(locations[userData.location.prv].loc[userData.location.loc].fsh !== false){
 					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fsh), 1, true);
-					changeAP(-10);
+					stats.changeAp(-10);
 				}
 				else{
 					console.log();
@@ -809,11 +624,10 @@ var commandMap = {
 		'des' : '- Chops wood in the local area, placing yielded wood in your inventory.',
 		'func' : function(cmd){
 
-			if(checkAP(20)){
+			if(stats.checkAp(20)){
 				if(locations[userData.location.prv].loc[userData.location.loc].chp !== false){
 					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].chp), 1, true);
-					changeAP(-20);
-					stats.gainXp(40);
+					stats.changeAp(-20);
 				}
 				else{
 					console.log();
@@ -832,10 +646,10 @@ var commandMap = {
 		'des' : '- Mines in the local area, placing yielded ore in your inventory.',
 		'func' : function(cmd){
 
-			if(checkAP(50)){
+			if(stats.checkAp(50)){
 				if(locations[userData.location.prv].loc[userData.location.loc].min !== false){
 					inv.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].min), 1, true);
-					changeAP(-50);
+					stats.changeAp(-50);
 				}
 				else{
 					console.log();
@@ -907,7 +721,7 @@ var commandMap = {
 		'grp' : 'Stats',
 		'des' : '- Displays your AP level.',
 		'func' : function(cmd){
-			fixAP();
+			stats.fixAp();
 			console.log(`\n   Your AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 		}
 	},

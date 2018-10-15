@@ -2,6 +2,7 @@ const readlineSync = require('readline-sync');
 const fs = require('fs');
 const util = require('./library/modules/util');
 const inv = require('./library/modules/inv');
+const loc = require('./library/modules/loc');
 
 var userData = {},
 	items = {},
@@ -25,10 +26,12 @@ var sessionData = {
 // function that loads the library files
 function loadResources(){
 	items = JSON.parse(fs.readFileSync('./library/encyclopedia.json', 'utf8'));
-	inv.setItems(items);
 	monsters = JSON.parse(fs.readFileSync('./library/bestiary.json', 'utf8'));
 	locations = JSON.parse(fs.readFileSync('./library/atlas.json', 'utf8'));
 	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
+
+	inv.setItems(items);
+	loc.setLocations(locations);
 }
 
 // function for retrieving saves from the save folder
@@ -366,14 +369,10 @@ function hasNewName(og){
 	return newName;
 }
 
-// checks if a province exists
-function isProvince(prv){
-	return locations.hasOwnProperty(prv);
-}
-
-// checks if a location exists within a province
-function isLocation(loc, prv){
-	return locations[prv].loc.hasOwnProperty(loc);
+// sets the userData object for each of the game's modules
+function setUserData(data){
+	inv.setUserData(data);
+	loc.setUserData(data);
 }
 
 // maps commands to functions and includes data about commands
@@ -403,7 +402,7 @@ var commandMap = {
 					userData.gen.dat = util.getTimestamp(true);
 					userData.gen.dt2 = util.getTimestamp(false);
 
-					inv.setUserData(userData);
+					setUserData(userData);
 
 					sessionData.mode = 'general';
 					console.log(`\n   Welcome, ${userData.gen.nam}!\n   Your profile was created at ${userData.gen.dat}.`);
@@ -463,7 +462,7 @@ var commandMap = {
 					var data = JSON.parse(json);
 					userData = data;
 
-					inv.setUserData(userData);
+					setUserData(userData);
 
 					sessionData.mode = 'general';
 					
@@ -1100,7 +1099,7 @@ var commandMap = {
 		}
 	},
 
-	// make a shorter alternate name for 'equipment'
+	// alias for 'equipment'
 	'eqp' : {
 		'grp' : 'Equipment',
 		'des' : '- See \'equipment\'.',
@@ -1191,66 +1190,21 @@ var commandMap = {
 	'location' : {
 		'grp' : 'Location',
 		'des' : '- displays the current province and specific location within that province that you are in.',
-		'func' : function(cmd){
-			cmd.shift();
+		'func' : loc.location
+	},
 
-			if(cmd != '++'){
-				console.log();
-				util.echo(`${userData.location.loc}, ${userData.location.prv} Province`);
-				console.log();
-
-				if(cmd == '+'){
-					util.echo(`Fishing: ${locations[userData.location.prv].loc[userData.location.loc].fsh !== false ? 'Yes' : 'No'}`);
-					util.echo(`Mining: ${locations[userData.location.prv].loc[userData.location.loc].min !== false ? 'Yes' : 'No'}`);
-					util.echo(`Foraging: ${locations[userData.location.prv].loc[userData.location.loc].frg !== false ? 'Yes' : 'No'}`);
-					util.echo(`Chopping: ${locations[userData.location.prv].loc[userData.location.loc].chp !== false ? 'Yes' : 'No'}`);
-					console.log();
-				}
-			}
-			else{
-				var province = readlineSync.question(' Province: ');
-
-				if(isProvince(province)){
-					var location = readlineSync.question(' Location: ');
-					if(isLocation(location, province)){
-						console.log();
-						util.echo(`${location}, ${province} Province`);
-						console.log();
-						util.echo(`Fishing: ${locations[province].loc[location].fsh !== false ? 'Yes' : 'No'}`);
-						util.echo(`Mining: ${locations[province].loc[location].min !== false ? 'Yes' : 'No'}`);
-						util.echo(`Foraging: ${locations[province].loc[location].frg !== false ? 'Yes' : 'No'}`);
-						util.echo(`Chopping: ${locations[province].loc[location].chp !== false ? 'Yes' : 'No'}`);
-						console.log();
-					}
-				}
-				else{
-					console.log('\n   That is not a province.\n');
-				}
-			}
-		}
+	// alias for 'location'
+	'loc' : {
+		'grp' : 'Location',
+		'des' : '- see "location".',
+		'func' : loc.location
 	},
 
 	// moves the player to a different location
 	'travel' : {
 		'grp' : 'Location',
 		'des' : '- moves you to a different location.',
-		'func' : function(cmd){
-			var destPrv = readlineSync.question(' Province: ');
-			if(isProvince(destPrv)){
-				var destLoc = readlineSync.question(` Location within ${destPrv}: `);
-				if(isLocation(destLoc, destPrv)){
-					userData.location.prv = destPrv;
-					userData.location.loc = destLoc;
-					console.log('\n   Traveled.\n');
-				}
-				else{
-					console.log('\n   That location does not exist within that province.\n');
-				}
-			}
-			else{
-				console.log('\n   That province does not exist.\n');
-			}
-		}
+		'func' : loc.travel
 	}
 };
 

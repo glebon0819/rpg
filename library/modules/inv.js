@@ -6,8 +6,8 @@ var items = {};
 exports.setUserData = function(data){
 	userData = data;
 }
-exports.setItems = function(itms){
-	items = itms;
+exports.setItems = function(data){
+	items = data;
 }
 
 // adds items to player's inventory

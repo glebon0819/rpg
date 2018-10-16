@@ -1,3 +1,4 @@
+const readlineSync = require('readline-sync')
 const util = require('./util.js');
 
 var userData = {};
@@ -47,6 +48,29 @@ exports.remFromInv = function(id, qty){
 	}
 	else{
 		delete userData.inv[id];
+	}
+}
+
+exports.drop = function(cmd){
+	cmd.shift();
+	var item = cmd.join(' ');
+	var id = module.exports.itmExists(item);
+
+	if(item.length > 0){
+		if(id !== false){
+			module.exports.remFromInv(id, 1)
+			console.log();
+			util.echo(`'${item}' dropped from inventory.`);
+			console.log();
+		}
+		else{
+			console.log();
+			util.echo(`Failed to drop '${item}'. No such item found in your inventory.`);
+			console.log();
+		}
+	}
+	else{
+		console.log(`\n   No item specified to drop.\n`);
 	}
 }
 
@@ -155,4 +179,123 @@ exports.hasNewName = function(og){
 	}
 
 	return newName;
+}
+
+exports.inventory = function(cmd){
+	if(Object.keys(userData.inv).length > 0){
+		console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
+		var itms = Object.keys(userData.inv);
+		itms.forEach(item => {
+			console.log('   ' + userData.inv[item].qty + ` x ${(module.exports.hasNewName(item) !== false ? module.exports.hasNewName(item) : items[item].nam)}`);
+		});
+		console.log('\n ========================================================\n');
+	}
+	else{
+		console.log('\n   Your inventory is empty.\n');
+	}
+}
+
+exports.equipment = function(cmd){
+	console.log();
+	for(var slot in userData.equipment){
+		console.log(`   ${slot}:`);
+		for(var itmId in userData.equipment[slot]){
+			util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(module.exports.hasNewName(itmId) !== false ? module.exports.hasNewName(itmId) : items[itmId].nam)}`);
+		}
+	}
+	console.log();
+}
+
+exports.rename = function(cmd){
+	cmd.shift();
+	var itm = cmd.join(' ');
+
+	// verify that the item they chose to rename exists
+	var id = module.exports.itmExists(itm);
+	if(id !== false){
+		var newName = readlineSync.question(' New name: ');
+
+		// verify that the new name is not already taken
+		if(module.exports.itmExists(newName) === false){
+
+			// get the original ID number for the item 
+
+			// add the rename to the user's data
+			//userData.renames[newName] = id;
+			userData.renames[id] = newName;
+
+			console.log();
+			util.echo(`'${itm}' renamed to '${newName}'.`);
+			console.log();
+		}
+		else{
+			console.log();
+			util.echo('An item with that name already exists.');
+			console.log();
+		}
+	}
+	else{
+		console.log();
+		util.echo('That item does not exist.');
+		console.log();
+	}
+}
+
+exports.inspect = function(cmd){
+	cmd.shift();
+	var itm = cmd.join(' ');
+
+	if(module.exports.isInEqp(itm) !== false || module.exports.isInInv(itm) !== false){
+		var qty = 0;
+		var id = module.exports.itmExists(itm);
+
+		if(module.exports.isInEqp(itm) !== false){
+			qty = userData.equipment[isInEqp(itm)][itm].qty;
+		}
+		if(module.exports.isInInv(itm)){
+			qty += userData.inv[id].qty;
+		}
+
+		var properties = items[id];
+
+		console.log(`\n   +  Quantity: ${qty}`);
+
+		console.log(`   +  Type: ${properties.typ}`);
+
+		console.log(`   +  Value: ${properties.val}`);
+
+		if(properties.typ == 'food' || properties.typ == 'beverage' || properties.typ == 'potion'){
+			if(properties.effects !== undefined){
+				console.log('   +  Effects:');
+				if(properties.effects.hp !== undefined){
+					console.log(`      ${properties.effects.hp > 0 ? '+' : '-'}  ${Math.abs(properties.effects.hp)} HP`);
+				}
+				//if(typeof properties.effects.ap !== undefined){
+				if(properties.effects.ap !== undefined){
+					console.log(`      ${properties.effects.ap > 0 ? '+' : '-'}  ${Math.abs(properties.effects.ap)} AP`);
+				}
+			}
+		}
+
+		if(properties.typ == 'weapon' || properties.typ == 'armor'){
+
+			if(properties.typ == 'weapon'){
+				console.log(`   +  Damage: ${properties.dmg}`);
+			}
+			if(properties.typ == 'armor'){
+				console.log(`   +  Armor: ${properties.arm}`);
+				console.log(`   +  Slot: ${properties.slt}`);
+			}
+
+			console.log('   +  Stats:');
+			for(var stat in properties.stats){
+				console.log(`      ${properties.stats[stat] > 0 ? '+' : '-'}  ${Math.abs(properties.stats[stat])} ${stat}`);
+			}
+		}
+
+		console.log();
+	}
+	else{
+		console.log('\n   That item could not be found in your inventory.\n');
+	}
 }

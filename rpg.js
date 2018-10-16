@@ -335,19 +335,7 @@ var commandMap = {
 	'inventory' : {
 		'grp' : 'Inventory',
 		'des' : '- Displays the contents of your inventory.',
-		'func' : function(cmd){
-			if(Object.keys(userData.inv).length > 0){
-				console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
-				var itms = Object.keys(userData.inv);
-				itms.forEach(item => {
-					console.log('   ' + userData.inv[item].qty + ` x ${(itemMod.hasNewName(item) !== false ? itemMod.hasNewName(item) : items[item].nam)}`);
-				});
-				console.log('\n ========================================================\n');
-			}
-			else{
-				console.log('\n   Your inventory is empty.\n');
-			}
-		}
+		'func' : itemMod.inventory
 	},
 	// shorthand version of 'inventory'
 	'inv' : {
@@ -361,28 +349,7 @@ var commandMap = {
 	'drop' : {
 		'grp' : 'Inventory',
 		'des' : '<item in inventory> - Drops an item, permanently removing it from your inventory.',
-		'func' : function(cmd){
-			cmd.shift();
-			var item = cmd.join(' ');
-			var id = itemMod.itmExists(item);
-
-			if(item.length > 0){
-				if(id !== false){
-					itemMod.remFromInv(id, 1)
-					console.log();
-					util.echo(`'${item}' dropped from inventory.`);
-					console.log();
-				}
-				else{
-					console.log();
-					util.echo(`Failed to drop '${item}'. No such item found in your inventory.`);
-					console.log();
-				}
-			}
-			else{
-				console.log(`\n   No item specified to drop.\n`);
-			}
-		}
+		'func' : itemMod.drop
 	},
 	// shows the user what stats they have
 	'stats' : {
@@ -607,66 +574,7 @@ var commandMap = {
 	'inspect' : {
 		'grp' : 'Inventory',
 		'des' : '<item in inventory> - Displays an item\'s various qualities.',
-		'func' : function(cmd){
-			cmd.shift();
-			var itm = cmd.join(' ');
-
-			if(isInEqp(itm) !== false || itemMod.isInInv(itm) !== false){
-				var qty = 0;
-				var id = itemMod.itmExists(itm);
-
-				if(isInEqp(itm) !== false){
-					qty = userData.equipment[isInEqp(itm)][itm].qty;
-				}
-				if(itemMod.isInInv(itm)){
-					qty += userData.inv[id].qty;
-				}
-
-				var properties = items[id];
-
-				console.log(`\n   +  Quantity: ${qty}`);
-
-				console.log(`   +  Type: ${properties.typ}`);
-
-				console.log(`   +  Value: ${properties.val}`);
-
-				if(properties.typ == 'food' || properties.typ == 'beverage' || properties.typ == 'potion'){
-					console.log('   +  Effects:');
-					if(properties.effects.hp !== undefined){
-						console.log(`      ${properties.effects.hp > 0 ? '+' : '-'}  ${Math.abs(properties.effects.hp)} HP`);
-					}
-					//if(typeof properties.effects.ap !== undefined){
-					if(properties.effects.ap !== undefined){
-						console.log(`      ${properties.effects.ap > 0 ? '+' : '-'}  ${Math.abs(properties.effects.ap)} AP`);
-					}
-				}
-
-				if(properties.typ == 'weapon' || properties.typ == 'armor'){
-
-					//console.log(`   ${userData.inv[itm].hp > 0 ? '+' : '-'}  Condition: (${userData.inv[itm].hp}/${properties.hpm})`);
-
-					//console.log(`   +  True Value: ${(properties.val * userData.inv[itm].hp) / properties.hpm}`);
-
-					if(properties.typ == 'weapon'){
-						console.log(`   +  Damage: ${properties.dmg}`);
-					}
-					if(properties.typ == 'armor'){
-						console.log(`   +  Armor: ${properties.arm}`);
-						console.log(`   +  Slot: ${properties.slt}`);
-					}
-
-					console.log('   +  Stats:');
-					for(var stat in properties.stats){
-						console.log(`      ${properties.stats[stat] > 0 ? '+' : '-'}  ${Math.abs(properties.stats[stat])} ${stat}`);
-					}
-				}
-
-				console.log();
-			}
-			else{
-				console.log('\n   That item could not be found in your inventory.\n');
-			}
-		}
+		'func' : itemMod.inspect
 	},
 
 	// displays description of a command
@@ -783,16 +691,7 @@ var commandMap = {
 	'equipment' : {
 		'grp' : 'Equipment',
 		'des' : '- Displays the contents of your inventory.',
-		'func' : function(cmd){
-			console.log();
-			for(var slot in userData.equipment){
-				console.log(`   ${slot}:`);
-				for(var itmId in userData.equipment[slot]){
-					util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(itemMod.hasNewName(itmId) !== false ? itemMod.hasNewName(itmId) : items[itmId].nam)}`);
-				}
-			}
-			console.log();
-		}
+		'func' : itemMod.equipment
 	},
 
 	// alias for 'equipment'
@@ -833,40 +732,7 @@ var commandMap = {
 	'rename' : {
 		'grp' : 'Inventory',
 		'des' : '<item in inventory or equipment> - renames an item.',
-		'func' : function(cmd){
-			cmd.shift();
-			var itm = cmd.join(' ');
-
-			// verify that the item they chose to rename exists
-			var id = itemMod.itmExists(itm);
-			if(id !== false){
-				var newName = readlineSync.question(' New name: ');
-
-				// verify that the new name is not already taken
-				if(itemMod.itmExists(newName) === false){
-
-					// get the original ID number for the item 
-
-					// add the rename to the user's data
-					//userData.renames[newName] = id;
-					userData.renames[id] = newName;
-
-					console.log();
-					util.echo(`'${itm}' renamed to '${newName}'.`);
-					console.log();
-				}
-				else{
-					console.log();
-					util.echo('An item with that name already exists.');
-					console.log();
-				}
-			}
-			else{
-				console.log();
-				util.echo('That item does not exist.');
-				console.log();
-			}
-		}
+		'func' : itemMod.rename
 	},
 
 	// displays a map of the current province to the player

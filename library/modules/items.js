@@ -296,6 +296,6 @@ exports.inspect = function(cmd){
 		console.log();
 	}
 	else{
-		console.log('\n   That item could not be found in your inventory.\n');
+		console.log('\n   That item could not be found in your inventory or equipment.\n');
 	}
 }

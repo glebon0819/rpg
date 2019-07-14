@@ -1,4 +1,5 @@
 const readlineSync = require('readline-sync');
+const chalk = require('chalk');
 const fs = require('fs');
 const util = require('./library/modules/util');
 const itemMod = require('./library/modules/items');
@@ -21,7 +22,8 @@ var sessionData = {
 	// tracks the number of lines entered since the last command
 	'linesSince' : 0,
 	'mode' : 'start',
-	'enemy' : null
+	'enemy' : null,
+	'commandHistory' : ''
 };
 
 // function that loads the library files
@@ -36,19 +38,25 @@ function loadResources(){
 	loc.setLocations(locations);
 	stats.setItems(items);
 	stats.setConfig(config);
+	util.setConfig(config);
 }
 
 // function for retrieving saves from the save folder
 function getSaves(){
 	var saves = [];
-	var files = fs.readdirSync('saves');
-	files.forEach(file => {
-		//console.log(file);
-		var json = fs.readFileSync('./saves/' + file, 'utf8');
-		var data = JSON.parse(json);
-		var name = data.gen.nam;
-		saves.push({file : file, name : data.gen.nam, date : data.gen.dat});
-	});
+	try {
+		var files = fs.readdirSync('saves');
+		files.forEach(file => {
+			//console.log(file);
+			var json = fs.readFileSync('./saves/' + file, 'utf8');
+			var data = JSON.parse(json);
+			var name = data.gen.nam;
+			saves.push({file : file, name : data.gen.nam, date : data.gen.dat});
+		});
+	}
+	catch(error) {
+		fs.mkdirSync('./saves/');
+	}
 	return saves;
 }
 
@@ -115,30 +123,6 @@ function checkCooldown(cmd){
 	return timeleft;
 }
 
-// creates a buff, which is a temporary boost in stats
-function createBuff(stat, pts, sec, src){
-
-	// adds a buff to the userData
-	var id = util.getTimestamp(true);
-	userData.buffs[id] = { stat : stat, pts : pts, dur : sec, src : src };
-	userData.stats[stat] += parseInt(pts);
-
-	// creates a timer to remove the buff
-	setTimeout(removeBuff, sec * 1000, id);
-
-}
-
-// removes a buff from the userData
-function removeBuff(id){
-
-	// removes additional stat points from the buff
-	userData.stats[userData.buffs[id].stat] -= userData.buffs[id].pts;
-
-	// removes buff from buff object
-	delete userData.buffs[id];
-
-}
-
 // cleans up cooldowns, buffs, etc. that are left over from the last session
 // removes expired things and sets timeouts and intervals for things that are still active
 function cleanUp(){
@@ -155,9 +139,9 @@ function cleanUp(){
 	}
 
 	// goes through each buff, restarts them from where they left off
-	for(var buff in userData.buffs){
+	/*for(var buff in userData.buffs){
 		setTimeout(removeBuff, userData.buffs[buff].dur * 1000 - (new Date(userData.gen.sve) - new Date(buff)), buff);
-	}
+	}*/
 }
 
 // sets the userData object for each of the game's modules
@@ -179,31 +163,35 @@ var commandMap = {
 			var username = cmd.join(' ');
 
 			if(username.length > 0){
+				var profileLength = username.length + 8 + 18;
+				if(profileLength <= config.GAME_CHAR_WIDTH) {
+					var profiles = getSaves();
+					var available = true;
+					profiles.forEach(profile => {
+						if(profile.name == username){
+							available = false;
+						}
+					});
 
-				var profiles = getSaves();
-				var available = true;
-				profiles.forEach(profile => {
-					if(profile.name == username){
-						available = false;
+					if(available){
+						userData = config.defaultProfile;
+						userData.gen.nam = username;
+						userData.gen.dat = util.getTimestamp(true);
+						userData.gen.dt2 = util.getTimestamp(false);
+
+						setUserData(userData);
+
+						sessionData.mode = 'general';
+						console.log(`\n   Welcome, ${userData.gen.nam}!\n   Your profile was created at ${userData.gen.dat}.`);
+
+						commandMap['me'].func();
 					}
-				});
-
-				if(available){
-					userData = config.defaultProfile;
-					userData.gen.nam = username;
-					userData.gen.dat = util.getTimestamp(true);
-					userData.gen.dt2 = util.getTimestamp(false);
-
-					setUserData(userData);
-
-					sessionData.mode = 'general';
-					console.log(`\n   Welcome, ${userData.gen.nam}!\n   Your profile was created at ${userData.gen.dat}.`);
-
-					commandMap['me'].func();
-
+					else{
+						console.log('\n   That username is unavailable.\n');
+					}
 				}
-				else{
-					console.log('\n   That username is unavailable.\n');
+				else {
+					console.log('\n  Username too long. Usernames must be under 28 characters in length.\n');
 				}
 			}
 			else {
@@ -223,7 +211,24 @@ var commandMap = {
 			else {
 				console.log('\n   We found the following save files on your disc:');
 				profiles.forEach(profile => {
-					console.log(`\n   +  Created on ${profile.date} ........ "${profile.name}"`);
+					var date = profile.date.substring(0, profile.date.indexOf('T'));
+					var profileLength = profile.name.length + 7 + 18;
+					var spacer = ' ';
+					var spacerWidth = config.GAME_CHAR_WIDTH - profileLength;
+					switch(spacerWidth) {
+						case 1:
+							break;
+						case 2:
+							spacer += ' ';
+							break;
+						default:
+							for(var i = 0; i < spacerWidth - 2; i++) {
+								spacer += '.';
+							}
+							spacer += ' ';
+							break;
+					}
+					console.log(`\n   +  "${profile.name}"${spacer}Created ${date}`);
 				});
 				console.log('');
 			}
@@ -315,7 +320,10 @@ var commandMap = {
 		'grp' : 'Miscellaneous',
 		'des' : '- Displays a list of usable commands.',
 		'func' : function(cmd){
-			console.log(`\n   Commands\n ========================================================\n`);
+			console.log();
+			util.echo(util.generateSpacer('='), true, ' ');
+			util.echo('Commands');
+			util.echo(util.generateSpacer('-'), true, ' ');
 			var lists = {};
 			var cmds = Object.keys(commandMap);
 			cmds.forEach(cmd => {
@@ -329,6 +337,8 @@ var commandMap = {
 				util.echo(lists[group].join(', '));
 				console.log();
 			}
+			util.echo(util.generateSpacer('='), true, ' ');
+			console.log();
 		}
 	},
 	// shows the user a list of the items in their inventory
@@ -348,7 +358,7 @@ var commandMap = {
 	// drops an item from inventory
 	'drop' : {
 		'grp' : 'Inventory',
-		'des' : '<item in inventory> - Drops an item, permanently removing it from your inventory.',
+		'des' : '<item> - Drops an item, permanently removing it from your inventory.',
 		'func' : itemMod.drop
 	},
 	// shows the user what stats they have
@@ -360,33 +370,38 @@ var commandMap = {
 	// used to assign points to different stats
 	'assign' : {
 		'grp' : 'Stats',
-		'des' : '<number of points> <stat to assign points to> - Assigns unassigned stat points.',
+		'des' : '<number of points> <stat> - Assigns unassigned stat points.',
 		'func' : stats.assign
 	},
 	// shows the user general information about themself
 	'me' : {
 		'grp' : 'Stats',
 		'func' : function(cmd){
+			stats.fixAp();
+			// |///////////////////////////////=======================|
 			console.log(`
    ${userData.gen.nam}:
+   
+   +  HP: ${userData.gen.hp}
+   +  AP: ${userData.gen.ap}
 
    +  Level: ${userData.gen.lvl}
    +  XP: ${userData.gen.exp}/${config.levels[userData.gen.lvl].XP_CAP}
    +  Gold: ${userData.gen.gld}
    +  Unassigned stat points: ${userData.gen.poi}
-				`);
+ `);
 		}
 	},
 	// can be used to consume beverages and potions
 	'drink' : {
 		'grp' : 'Inventory',
-		'des' : '<beverage or potion item in inventory> - Drinks a beverage or potion, giving you any effects it has.',
+		'des' : '<item> - Drinks a beverage or potion, giving you any effects it has.',
 		'func' : stats.drink
 	},
 	// can be used to consume food items
 	'eat' : {
 		'grp' : 'Inventory',
-		'des' : '<food item in inventory> - Eats a piece of food, giving you any effects it has.',
+		'des' : '<item> - Eats a piece of food, giving you any effects it has.',
 		'func' : stats.eat
 	},
 	// continues your latest battle
@@ -401,9 +416,22 @@ var commandMap = {
 				console.log();
 				util.echo(`A ${sessionData.enemy} has appeared! You are now in combat.`);
 				console.log();
+
+				var enemySpeed = util.randNum(20);
+				var roll = util.roll();
+				util.echo(`Speed check. Target: > ${enemySpeed}.`);
+				util.echo(`Rolled a ${roll}.`);
+				if(userData.stats.speed + roll >= enemySpeed) {
+					util.echo('Passed!');
+					console.log('\n   You attack first!\n');
+				} else {
+					util.echo('Failed!');
+					console.log('\n   They attack first!\n');
+				}
 			}
 			else{
 				console.log('\n   You attack!\n');
+				console.log('\n   They attack!\n');
 			}
 		}
 	},
@@ -432,8 +460,15 @@ var commandMap = {
 		'func' : function(cmd){
 			
 			if(stats.checkAp(10)){
-				itemMod.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 2, true);
-				stats.changeAp(-10);
+				if(locations[userData.location.prv].loc[userData.location.loc].fge !== false){
+					itemMod.addToInv(util.randPick(locations[userData.location.prv].loc[userData.location.loc].fge), 1, true);
+					stats.changeAp(-10);
+				}
+				else{
+					console.log();
+					util.echo('There is nothing to forage here. Travel somewhere else to forage.');
+					console.log();
+				}
 			}
 			else{
 				console.log('\n   Insufficient AP.\n');
@@ -535,6 +570,7 @@ var commandMap = {
 		'func' : function(cmd){
 			var sure = readlineSync.keyInYNStrict('\n   Are you sure? Unsaved progress will be lost.');
 			if(sure === true){
+				util.log(sessionData.commandHistory);
 				console.log('\n !======================================================!');
 				process.exit(0);
 			}
@@ -603,7 +639,8 @@ var commandMap = {
 
 	'colors' : {
 		'func' : function(cmd){
-			console.log('\x1b[5m%s\x1b[0m', '\n   I am red.\n');
+			//console.log('\x1b[5m%s\x1b[0m', '\n   I am red.\n');
+			console.log(chalk.red('\n   I am red.\n'));
 		}
 	},
 
@@ -728,6 +765,15 @@ var commandMap = {
 		}
 	},
 
+	// clears the screen
+	'cls' : {
+		'grp' : 'Miscellaneous',
+		'des' : '- Clears the screen.',
+		'func' : function(cmd){
+			console.log('\033c');
+		}
+	},
+
 	// renames an item
 	'rename' : {
 		'grp' : 'Inventory',
@@ -742,7 +788,7 @@ var commandMap = {
 		'func' : function(cmd){
 			console.log();
 			util.echo(`${userData.location.prv} Province:`);
-			util.render(locations[userData.location.prv].map);
+			util.renderMap(locations[userData.location.prv].map);
 			/*util.echo('=======================================================', ' ');
 			util.render('./library/resources/maps/key.txt');*/
 		}
@@ -774,19 +820,35 @@ function run(){
 
 	// code that runs on startup
 	if(sessionData.cycle === 0){
-		loadResources();
+		try {
+			loadResources();
 
-		console.log('\n !=============== [Welcome to Test RPG!] ===============!');
-		commandMap['profiles'].func('');
-		//console.log('   Use the \'new\' command followed by your desired\n   username to start a new game or \'load\' followed by the\n   username of your desired profile to load a previously\n   saved game.\n');
-		util.echo('Use the \'new\' command followed by your desired username to start a new game or \'load\' followed by the username of your desired profile to load a previously saved game.');
-		console.log();
-		//console.log('   For help, use \'commands\' to display a list of\n   commands that can be used in the game.\n');
-		util.echo('For help, use \'commands\' to display a list of commands that can be used in the game.');
-		console.log();
+			console.log('\n !=================== [Welcome to SideDown!] ===================!');
+			util.render('./library/resources/SideDown.txt');
+			commandMap['profiles'].func('');
+			//console.log('   Use the \'new\' command followed by your desired\n   username to start a new game or \'load\' followed by the\n   username of your desired profile to load a previously\n   saved game.\n');
+			util.echo('Use the \'new\' command followed by your desired username to start a new game or \'load\' followed by the username of your desired profile to load a previously saved game.');
+			console.log();
+			//console.log('   For help, use \'commands\' to display a list of\n   commands that can be used in the game.\n');
+			util.echo('For help, use \'commands\' to display a list of commands that can be used in the game.');
+			console.log();
+		}
+		catch(error) {
+			console.log();
+			util.echo('Game configuration files corrupted. Please remove the current version of this game and download the latest stable version.');
+			console.log();
+			util.echo('Press any key to confirm that you understand and close the current instance.');
+			console.log();
+			util.echo(error.message);
+			console.log();
+			key = readlineSync.keyIn(' ', {hideEchoBack: true, mask: ''});
+			return;
+		}
 	}
 
 	var command = readlineSync.question(' ');
+	sessionData.commandHistory += (util.getTimestamp(true) + '\r\n');
+	sessionData.commandHistory += (command + '\r\n\r\n');
 
 	//check if last command's expected additional inputs have been met
 	/*if(sessionData.linesSince < commandMap[sessionData.lastCmd].expIn){

@@ -30,7 +30,9 @@
 			},
 			"Watchtower":{
 				"typ":"fort",
-				"cre":{},
+				"cre":{
+					"Wolf":1
+				},
 				"fsh":false,
 				"min":false,
 				"chp":false,

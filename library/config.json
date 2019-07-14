@@ -1,5 +1,5 @@
 {
-	"GAME_CHAR_WIDTH":56,
+	"GAME_CHAR_WIDTH":64,
 	"BUFF_STACK_MAX":2,
 	"levels":{
 		"LEVEL_CAP":10,
@@ -50,7 +50,8 @@
 				"5":"delete",
 				"6":"profiles",
 				"7":"info",
-				"8":"help"
+				"8":"help",
+				"9":"cls"
 			},
 			"black":{}
 		},

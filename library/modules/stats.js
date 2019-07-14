@@ -60,6 +60,48 @@ function die(){
 	console.log('   -  You have died! :(\n');
 }
 
+// creates a buff, which is a temporary boost in stats
+function createBuff(stat, pts, sec, src){
+
+	// adds a buff to the userData
+	/*var id = util.getTimestamp(true);
+	userData.buffs[id] = { stat : stat, pts : pts, dur : sec, src : src };*/
+	var endTime = Date.now() + (sec * 1000);
+	endTime = endTime.toString();
+	userData.buffs[endTime] = { stat : stat, pts : pts, src : src };
+	userData.stats[stat] += parseInt(pts);
+
+	// creates a timer to remove the buff
+	//setTimeout(removeBuff, sec * 1000, id);
+
+}
+
+// removes a buff from the userData
+function removeBuff(id){
+
+	// removes additional stat points from the buff
+	userData.stats[userData.buffs[id].stat] -= userData.buffs[id].pts;
+
+	// removes buff from buff object
+	delete userData.buffs[id];
+
+}
+
+// removes buffs that should no longer apply
+function fixBuffs(){
+	Object.keys(userData.buffs).forEach(function(id){
+		var endTime = new Date(id);
+		var buff = userData.buffs[id];
+
+		console.log(new Date(Date.now() + (30 * 1000)));
+
+		// if buff was supposed to expire by now, remove it
+		if(endTime < new Date()){
+			removeBuff(id);
+		}
+	});
+}
+
 // returns whether a string is a stat
 exports.isStat = function(str){
 	var isStat = false;
@@ -69,6 +111,17 @@ exports.isStat = function(str){
 		}
 	});
 	return isStat;
+}
+
+// gets AP back up to where it is supposed to be (according to the increment and how many milliseconds have elapsed)
+exports.fixAp = function(){
+	if(userData.gen.ap < userData.gen.apm){
+		var lastTime = new Date(userData.gen.apc);
+		var currentTime = new Date(util.getTimestamp(true));
+		if((currentTime - lastTime) >= getApIncrement()){
+			module.exports.changeAp(Math.floor((currentTime - lastTime) / getApIncrement()));
+		}
+	}
 }
 
 // adds a number to AP (including negatives)
@@ -109,17 +162,6 @@ exports.changeHp = function(val){
 	}
 }
 
-// gets AP back up to where it is supposed to be (according to the increment and how many milliseconds have elapsed)
-exports.fixAp = function(){
-	if(userData.gen.ap < userData.gen.apm){
-		var lastTime = new Date(userData.gen.apc);
-		var currentTime = new Date(util.getTimestamp(true));
-		if((currentTime - lastTime) >= getApIncrement()){
-			module.exports.changeAp(Math.floor((currentTime - lastTime) / getApIncrement()));
-		}
-	}
-}
-
 // removes item from inventory and applies its buffs and effects
 exports.consume = function(itm){
 	// get id of item from inventory and use it to access item's description in encyclopedia
@@ -128,7 +170,7 @@ exports.consume = function(itm){
 
 	if(id !== false){
 
-		/*var itemBuffs = items[id].buffs;
+		var itemBuffs = items[id].buffs;
 		if(itemBuffs !== undefined && Object.keys(itemBuffs).length > 0){
 			var userBuffCount = {};
 			var itemBuffCount = {};
@@ -162,7 +204,7 @@ exports.consume = function(itm){
 			for(var buff in itemBuffs){
 				createBuff(buff, itemBuffs[buff].pts, itemBuffs[buff].dur, itm);
 			}
-		}*/
+		}
 
 		itemMod.remFromInv(id, 1);
 
@@ -287,6 +329,7 @@ exports.drink = function(cmd){
 }
 
 exports.stats = function(cmd){
+	fixBuffs();
 	var stats = Object.keys(userData.stats);
 	console.log(`\n   ${userData.gen.nam}'s Stats:\n`);
 	stats.forEach(stat => {

@@ -1,5 +1,11 @@
 const fs = require('fs');
 
+var config = {};
+
+exports.setConfig = function(data){
+	config = data;
+}
+
 exports.getTimestamp = function(readable){
 
 	var now = new Date();
@@ -44,36 +50,47 @@ exports.getTimestamp = function(readable){
 }
 
 // logs strings to the console while maintaining the predefined character width of the game
-exports.echo = function(string, padding){
-
+exports.echo = function(string, preserve, padding){
+	var width = config.GAME_CHAR_WIDTH;
 	var lastI = 0;
 	var end;
 	if(padding === undefined){
 		var padding = '   ';
 	}
-	for(var i = 0; i < Math.ceil(string.length / (57 - padding.length)); i++){
-		var endFound = false;
-		var char;
-		end = lastI + (56 - padding.length);
-		while(!endFound){
-			if(end === lastI){
-				endFound = true;
-				end = lastI + (56 - padding.length);
-			}
-			else{
-				char = string.charAt(end);
-				if(char === ' ' || end === string.length){
+	if(preserve !== true) {
+		for(var i = 0; i < Math.ceil(string.length / ((width + 1) - padding.length)); i++){
+			var endFound = false;
+			var char;
+			end = lastI + (width - padding.length);
+			while(!endFound){
+				if(end === lastI){
 					endFound = true;
+					end = lastI + (width - padding.length);
 				}
 				else{
-					end--;
+					char = string.charAt(end);
+					if(char === ' ' || end === string.length){
+						endFound = true;
+					}
+					else{
+						end--;
+					}
 				}
 			}
+			console.log(padding + string.substring(lastI, end).trim());
+			lastI = end;
 		}
-		console.log(padding + string.substring(lastI, end).trim());
-		lastI = end;
 	}
-
+	else {
+		for(var i = 0; i < Math.ceil(string.length / ((width + 1) - padding.length)); i++){
+			end = lastI + width;
+			if(end > (string.length)) {
+				end = (string.length);
+			}
+			console.log(padding + string.substring(lastI, end));
+			lastI += width;
+		}
+	}
 }
 
 // returns the key to a random property of an input object where the values are the properties' probabilities of being picked
@@ -93,7 +110,18 @@ exports.randPick = function(object){
     });
 
 	return res;
+}
 
+exports.roll = function() {
+	return this.randNum(20);
+}
+
+// generates a random number within a certain range
+exports.randNum = function(ceiling, floor) {
+	if(!floor) {
+		floor = 0;
+	}
+	return Math.floor((Math.random() * ceiling) - floor);
 }
 
 // prints contents of a text file to the console
@@ -102,7 +130,41 @@ exports.render = function(path){
 	var contents = fs.readFileSync(path, 'utf8');
 
 	console.log();
-	module.exports.echo(contents.replace(/\r?\n|\r/g, ""), ' ');
+	module.exports.echo(contents.replace(/\r?\n|\r/g, ""), true, ' ');
 	console.log();
 
+}
+
+// prints a map file to the console, automatically colors characters
+exports.renderMap = function(path){
+
+	var contents = fs.readFileSync(path, 'utf8');
+
+	console.log();
+	module.exports.echo(contents.replace(/\r?\n|\r/g, ""), true, ' ');
+	console.log();
+
+}
+
+// logs text to log file
+exports.log = function(text){
+	try {
+		var logFileContents = fs.readFileSync('log.txt');
+		fs.writeFileSync('log.txt', logFileContents + text);
+	}
+	catch(error) {
+		fs.writeFileSync('log.txt', text);
+	}
+}
+
+// creates a spacer that spans the game's console width using the given char
+exports.generateSpacer = function(char){
+	var spacer = '';
+	if(char.length > 1) {
+		char = char[0];
+	}
+	for(var i = 0; i < config.GAME_CHAR_WIDTH; i++) {
+		spacer += char;
+	}
+	return spacer;
 }

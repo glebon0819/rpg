@@ -31,7 +31,7 @@ exports.location = function(cmd){
 		if(cmd == '+'){
 			util.echo(`Fishing: ${locations[userData.location.prv].loc[userData.location.loc].fsh !== false ? 'Yes' : 'No'}`);
 			util.echo(`Mining: ${locations[userData.location.prv].loc[userData.location.loc].min !== false ? 'Yes' : 'No'}`);
-			util.echo(`Foraging: ${locations[userData.location.prv].loc[userData.location.loc].frg !== false ? 'Yes' : 'No'}`);
+			util.echo(`Foraging: ${locations[userData.location.prv].loc[userData.location.loc].fge !== false ? 'Yes' : 'No'}`);
 			util.echo(`Chopping: ${locations[userData.location.prv].loc[userData.location.loc].chp !== false ? 'Yes' : 'No'}`);
 			console.log();
 		}
@@ -58,7 +58,13 @@ exports.location = function(cmd){
 	}
 }
 exports.travel = function(cmd){
-	var destPrv = readlineSync.question(' Province: ');
+	cmd.shift();
+	var destPrv = userData.location.prv;
+
+	// if argument supplied, change province
+	if(cmd == '+') {
+		destPrv = readlineSync.question(' Province: ');
+	}
 	if(isProvince(destPrv)){
 		var destLoc = readlineSync.question(` Location within ${destPrv}: `);
 		if(isLocation(destLoc, destPrv)){

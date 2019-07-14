@@ -120,7 +120,7 @@
 		"buffs":{
 			"agility":{
 				"pts":"1",
-				"dur":"300"
+				"dur":"30"
 			}
 		}
 	},
@@ -171,6 +171,11 @@
 	"23":{
 		"nam":"Pine Log",
 		"val":0.25,
+		"typ":"misc"
+	},
+	"24":{
+		"nam":"Tattered Wolf Pelt",
+		"val":0.20,
 		"typ":"misc"
 	}
 }

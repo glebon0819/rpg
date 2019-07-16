@@ -1,4 +1,5 @@
 const fs = require('fs');
+const chalk = require('chalk');
 
 var config = {};
 
@@ -51,14 +52,17 @@ exports.getTimestamp = function(readable){
 
 // logs strings to the console while maintaining the predefined character width of the game
 exports.echo = function(string, preserve, padding){
+	string = string.trim();
 	var width = config.GAME_CHAR_WIDTH;
 	var lastI = 0;
 	var end;
+	var done = false;
+	var lastCharI = string.length - 1;
 	if(padding === undefined){
 		var padding = '   ';
 	}
 	if(preserve !== true) {
-		for(var i = 0; i < Math.ceil(string.length / ((width + 1) - padding.length)); i++){
+		while(done == false) {
 			var endFound = false;
 			var char;
 			end = lastI + (width - padding.length);
@@ -79,6 +83,9 @@ exports.echo = function(string, preserve, padding){
 			}
 			console.log(padding + string.substring(lastI, end).trim());
 			lastI = end;
+			if(lastI >= lastCharI) {
+				done = true;
+			}
 		}
 	}
 	else {
@@ -87,7 +94,7 @@ exports.echo = function(string, preserve, padding){
 			if(end > (string.length)) {
 				end = (string.length);
 			}
-			console.log(padding + string.substring(lastI, end));
+			console.log(padding + (string.substring(lastI, end).replace(/~/g, chalk.cyan('~')).replace(/Y/g, chalk.green('Y'))));
 			lastI += width;
 		}
 	}
@@ -139,11 +146,15 @@ exports.render = function(path){
 exports.renderMap = function(path){
 
 	var contents = fs.readFileSync(path, 'utf8');
+	var key = fs.readFileSync('./library/resources/maps/key.txt', 'utf8');
+
+	//contents = contents.replace(/~/g, chalk.blue('~'));
 
 	console.log();
 	module.exports.echo(contents.replace(/\r?\n|\r/g, ""), true, ' ');
 	console.log();
-
+	module.exports.echo(key.replace(/\r?\n|\r/g, ""), true, ' ');
+	console.log();
 }
 
 // logs text to log file

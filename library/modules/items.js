@@ -183,12 +183,16 @@ exports.hasNewName = function(og){
 
 exports.inventory = function(cmd){
 	if(Object.keys(userData.inv).length > 0){
-		console.log(`\n ========================================================\n   ${userData.gen.nam}'s Inventory\n --------------------------------------------------------\n`)
+		console.log();
+		util.echo(util.generateSpacer('='), true, ' ');
+		util.echo(`${userData.gen.nam}'s Inventory`);
+		util.echo(util.generateSpacer('-'), true, ' ');
 		var itms = Object.keys(userData.inv);
 		itms.forEach(item => {
 			console.log('   ' + userData.inv[item].qty + ` x ${(module.exports.hasNewName(item) !== false ? module.exports.hasNewName(item) : items[item].nam)}`);
 		});
-		console.log('\n ========================================================\n');
+		util.echo(util.generateSpacer('='), true, ' ');
+		console.log();
 	}
 	else{
 		console.log('\n   Your inventory is empty.\n');

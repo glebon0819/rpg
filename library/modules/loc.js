@@ -70,7 +70,15 @@ exports.travel = function(cmd){
 		if(isLocation(destLoc, destPrv)){
 			userData.location.prv = destPrv;
 			userData.location.loc = destLoc;
-			console.log('\n   Traveled.\n');
+			console.log();
+			util.echo(`You are now in ${destLoc}.`);
+			console.log();
+
+			var description = locations[destPrv].loc[destLoc].dsc;
+			if(description !== undefined && description.length > 0) {
+				util.echo(description);
+				console.log();
+			}
 		}
 		else{
 			console.log('\n   That location does not exist within that province.\n');

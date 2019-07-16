@@ -4,6 +4,7 @@
 		"cre":{},
 		"loc":{
 			"Dysphoria":{
+				"map":"./library/resources/maps/Dysphoria.txt",
 				"typ":"village",
 				"cre":{
 					"Thief":0.5,
@@ -28,8 +29,11 @@
 					"7":0.3
 				}
 			},
-			"Watchtower":{
+			"Fort Regice":{
+				"map":"./library/resources/maps/Fort Regice.txt",
 				"typ":"fort",
+				
+				"dsc":"As you approach the entrance to Fort Regice, you marvel at its superior craftsmanship. Despite being constructed primarily of wooden timbers, the outpost was clearly designed with precision by artisans. The fort is surrounded by open fields for many yards and protected by a tall stockade. The true wonder, however, is undoubtedly the wooden and stone watchtower at its center, which can be seen for miles around and which symbolizes the Empire's watch over the province.",
 				"cre":{
 					"Wolf":1
 				},

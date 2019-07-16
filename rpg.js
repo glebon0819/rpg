@@ -784,13 +784,18 @@ var commandMap = {
 	// displays a map of the current province to the player
 	'map' : {
 		'grp' : 'Location',
-		'des' : '- displays a map of the province you are currently in.',
+		'des' : '- displays a map of the location you are currently in.',
 		'func' : function(cmd){
+			cmd.shift();
 			console.log();
-			util.echo(`${userData.location.prv} Province:`);
-			util.renderMap(locations[userData.location.prv].map);
-			/*util.echo('=======================================================', ' ');
-			util.render('./library/resources/maps/key.txt');*/
+			if(cmd == '+') {
+				util.echo(`${userData.location.prv} Province:`);
+				util.renderMap(locations[userData.location.prv].map);
+			}
+			else {
+				util.echo(`${userData.location.loc}:`);
+				util.renderMap(locations[userData.location.prv].loc[userData.location.loc].map);
+			}
 		}
 	},
 

@@ -3,7 +3,8 @@ const util = require('./util.js');
 
 var userData = {};
 var items = {};
-config = {};
+var config = {};
+var recipes = {};
 
 exports.setUserData = function(data){
 	userData = data;
@@ -11,32 +12,35 @@ exports.setUserData = function(data){
 exports.setItems = function(data){
 	items = data;
 }
+exports.setRecipes = function(data){
+	recipes = data;
+}
 exports.setConfig = function(data){
 	config = data;
 }
 
 // adds items to player's inventory
-exports.addToInv = function(num, qty, ech){
+exports.addToInv = function(name, qty, ech){
 	// get inventory items
 	var inv = Object.keys(userData.inv);
 	var match = false;
 	// if item is in inventory increment qty, if not, add item
 	inv.forEach(item => {
-		if(num == item){
+		if(name == item){
 			match = true;
 		}
 	});
 
 	if(match){
-		userData.inv[num].qty = userData.inv[num].qty + qty;
+		userData.inv[name].qty = userData.inv[name].qty + qty;
 	}else{
-		userData.inv[num] = { qty : qty };
+		userData.inv[name] = { qty : qty };
 	}
 
 	// prints to screen message notifying player that an item was added to their inventory if the echo condition is true
 	if(ech === true){
 		console.log();
-		util.echo(`${qty} x '${items[num].nam}' added to inventory.`);
+		util.echo(`${qty} x '${name}' added to inventory.`);
 		console.log();
 	}
 }
@@ -85,27 +89,36 @@ exports.itmExists = function(itm){
 	}
 	// check if item exists in the encyclopedia
 	for(var item in items){
-		if(itm.toLowerCase() == items[item].nam.toLowerCase()){
+		if(itm.toLowerCase() == item.toLowerCase()){
 			exists = item;
 		}
 	}
 	return exists;
 }
 
-// returns whether an item is in the player's inventory; returns items id number if yes, false if no
-exports.isInInv = function(itm){
+// returns whether an item is in the player's inventory; returns items official name if yes, false if no
+exports.isInInv = function(itm, qty){
 	var isInInv = false;
-	//console.log(userData.renames);
+	var quantity = 0;
+	/*if(userData.renames[itm.toLowerCase()] !== undefined) {
+		isInInv = userData.renames[itm];
+	}*/
 	for(var rename in userData.renames){
-		if(itm.toLowerCase() == userData.renames[rename]){
-			isInInv = rename;
+		if(itm.toLowerCase() == rename.toLowerCase()){
+			isInInv = userData.renames[rename];
+			quantity++;
 		}
 	}
 	Object.keys(userData.inv).forEach(item => {
-		if(itm.toLowerCase() == items[item].nam.toLowerCase()){
+		if(itm.toLowerCase() == item.toLowerCase()){
+			//isInInv = userData.inv[item];
 			isInInv = item;
+			quantity += isInInv.qty;
 		}
 	});
+	/*if(qty !== undefined && quantity < qty) {
+		isInInv = false;
+	}*/
 	return isInInv;
 }
 
@@ -173,9 +186,10 @@ exports.isInEqp = function(itm){
 // checks if item has been renamed; if so returns its new name, if not returns false
 exports.hasNewName = function(og){
 	var newName = false;
-
-	if(userData.renames[og] !== undefined){
-		newName = userData.renames[og];
+	for(var newItem in userData.renames) {
+		if(userData.renames[newItem] == og) {
+			newName = newItem;
+		}
 	}
 
 	return newName;
@@ -189,7 +203,7 @@ exports.inventory = function(cmd){
 		util.echo(util.generateSpacer('-'), true, ' ');
 		var itms = Object.keys(userData.inv);
 		itms.forEach(item => {
-			console.log('   ' + userData.inv[item].qty + ` x ${(module.exports.hasNewName(item) !== false ? module.exports.hasNewName(item) : items[item].nam)}`);
+			console.log('   ' + userData.inv[item].qty + ` x ${(module.exports.hasNewName(item) !== false ? module.exports.hasNewName(item) : item)}`);
 		});
 		util.echo(util.generateSpacer('='), true, ' ');
 		console.log();
@@ -204,7 +218,7 @@ exports.equipment = function(cmd){
 	for(var slot in userData.equipment){
 		console.log(`   ${slot}:`);
 		for(var itmId in userData.equipment[slot]){
-			util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(module.exports.hasNewName(itmId) !== false ? module.exports.hasNewName(itmId) : items[itmId].nam)}`);
+			util.echo(`   +  ${userData.equipment[slot][itmId].qty} x ${(module.exports.hasNewName(itmId) !== false ? module.exports.hasNewName(itmId) : itmId)}`);
 		}
 	}
 	console.log();
@@ -226,7 +240,7 @@ exports.rename = function(cmd){
 
 			// add the rename to the user's data
 			//userData.renames[newName] = id;
-			userData.renames[id] = newName;
+			userData.renames[newName] = id;
 
 			console.log();
 			util.echo(`'${itm}' renamed to '${newName}'.`);
@@ -249,7 +263,7 @@ exports.inspect = function(cmd){
 	cmd.shift();
 	var itm = cmd.join(' ');
 
-	if(module.exports.isInEqp(itm) !== false || module.exports.isInInv(itm) !== false){
+	if(module.exports.isInEqp(itm) !== false || module.exports.isInInv(itm)[0] !== false){
 		var qty = 0;
 		var id = module.exports.itmExists(itm);
 
@@ -302,4 +316,25 @@ exports.inspect = function(cmd){
 	else{
 		console.log('\n   That item could not be found in your inventory or equipment.\n');
 	}
+}
+
+exports.recipeExists = function(name){
+	var recipe = false;
+	Object.keys(recipes).forEach(function(recipeName) {
+		if(name.toLowerCase() == recipeName.toLowerCase()) {
+			recipe = recipes[recipeName];
+		}
+	});
+	return recipe;
+}
+
+// checks whether the player has learned a recipe or not
+exports.recipeIsLearned = function(recipeName) {
+	var isLearned = false;
+	userData.recipes.forEach(function(recipe) {
+		if(recipe.trim().toLowerCase() == recipe.trim().toLowerCase()) {
+			isLearned = true;
+		}
+	});
+	return isLearned;
 }

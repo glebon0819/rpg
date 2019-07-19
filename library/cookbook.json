@@ -1,0 +1,17 @@
+{
+	"Deer Steak":{
+		"out":"Deer Steak",
+		"qty":"1",
+		"rqs":{
+			"Venizen":"2"
+		}
+	},
+	"Mushroom Soup":{
+		"out":"Mushroom Soup",
+		"qty":"1",
+		"rqs":{
+			"Mushroom":"3",
+			"Water":"1"
+		}
+	}
+}

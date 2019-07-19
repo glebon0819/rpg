@@ -32,13 +32,17 @@ function loadResources(){
 	monsters = JSON.parse(fs.readFileSync('./library/bestiary.json', 'utf8'));
 	locations = JSON.parse(fs.readFileSync('./library/atlas.json', 'utf8'));
 	config = JSON.parse(fs.readFileSync('./library/config.json', 'utf8'));
+	recipes = JSON.parse(fs.readFileSync('./library/cookbook.json', 'utf8'));
 
 	itemMod.setItems(items);
+	itemMod.setRecipes(recipes);
 	itemMod.setConfig(config);
 	loc.setLocations(locations);
 	stats.setItems(items);
 	stats.setConfig(config);
 	util.setConfig(config);
+
+	util.setCommands(commandMap);
 }
 
 // function for retrieving saves from the save folder
@@ -75,16 +79,46 @@ function cmdExists(cmd){
 // checks if a command is allowed under the current mode
 function checkMode(cmd){
 	var allowed = false;
-	// if whitelist is defined, use that. else, use blacklist
+	var whiteGrpExists = false;
+	var blackGrpExists = false;
+	
+	// if group whitelist is defined, use that
+	if(Object.keys(config.modes[sessionData.mode].whiteGroup).length > 0) {
+		whiteGrpExists = true;
+		for(var whiteGroup in config.modes[sessionData.mode].whiteGroup){
+			if(util.getCmdGrp(cmd) !== null && config.modes[sessionData.mode].whiteGroup[whiteGroup] == util.getCmdGrp(cmd)){
+				allowed = true;
+			}
+		}
+	}
+
+	// else use group blacklist
+	else {
+		for(var commandGroup in config.modes[sessionData.mode].blackGroup){
+			if(config.modes[sessionData.mode].blackGroup[commandGroup] == util.getCmdGrp(cmd)){
+				allowed = false;
+			}
+		}
+	}
+
+	// if whitelist is defined, use that
 	if(Object.keys(config.modes[sessionData.mode].white).length > 0){
+		if(blackGrpExists == false) {
+			allowed = false;
+		}
 		for(var commandKey in config.modes[sessionData.mode].white){
 			if(config.modes[sessionData.mode].white[commandKey] == cmd){
 				allowed = true;
 			}
 		}
 	}
-	else{
-		allowed = true;
+
+	// else use blacklist
+	//else{
+	if(Object.keys(config.modes[sessionData.mode].black).length > 0){
+		if(whiteGrpExists == false) {
+			allowed = true;
+		}
 		for(var commandKey in config.modes[sessionData.mode].black){
 			if(config.modes[sessionData.mode].black[commandKey] == cmd){
 				allowed = false;
@@ -637,13 +671,6 @@ var commandMap = {
 		}
 	},
 
-	'colors' : {
-		'func' : function(cmd){
-			//console.log('\x1b[5m%s\x1b[0m', '\n   I am red.\n');
-			console.log(chalk.red('\n   I am red.\n'));
-		}
-	},
-
 	// displays list of current buffs, their stats and their additional points
 	'buffs' : {
 		'grp' : 'Stats',
@@ -672,8 +699,8 @@ var commandMap = {
 
 			if(item.length > 0){
 				// checks that the item given exists in the user's inventory
-				var id = itemMod.isInInv(item);
-				if(id !== false){
+				var id = itemMod.isInInv(item, 1);
+				if(id !== false && id !== undefined){
 					// checks that the item is equippable
 					if(items[id].slt !== undefined){
 						try{
@@ -788,7 +815,11 @@ var commandMap = {
 		'func' : function(cmd){
 			cmd.shift();
 			console.log();
-			if(cmd == '+') {
+			if(cmd == '++') {
+				util.echo('World:');
+				util.renderMap('./library/resources/maps/World.txt');
+			}
+			else if(cmd == '+') {
 				util.echo(`${userData.location.prv} Province:`);
 				util.renderMap(locations[userData.location.prv].map);
 			}
@@ -818,6 +849,212 @@ var commandMap = {
 		'grp' : 'Location',
 		'des' : '- moves you to a different location.',
 		'func' : loc.travel
+	},
+
+	// creates a campsite and puts you into camping mode
+	// will require >= 3 wood to perform
+	'camp' : {
+		'grp' : 'Camping',
+		'des' : '- creates a camp.',
+		'func' : function(cmd) {
+			if(stats.statCheck('agility', 2)){
+				sessionData.mode = 'camp';
+				console.log();
+				util.echo('You are now camping.');
+				console.log();
+			}
+			else {
+				console.log();
+				util.echo('You cannot camp now.');
+				console.log();
+			}
+		}
+	},
+
+	// leaves a campsite
+	'leave' : {
+		'grp' : 'Camping',
+		'des' : '- leaves the campsite.',
+		'func' : function(cmd) {
+			sessionData.mode = 'general';
+			console.log();
+			util.echo('You left the campsite.');
+			console.log();
+		}
+	},
+
+	// leaves a campsite
+	'rest' : {
+		'grp' : 'Camping',
+		'des' : '- begins resting, replenishing AP at a faster rate.',
+		'func' : function(cmd) {
+			sessionData.mode = 'rest';
+			console.log();
+			util.echo('You are now resting.');
+			console.log();
+		}
+	},
+
+	// wakes character from resting
+	'wake' : {
+		'grp' : 'Camping',
+		'des' : '- wakes from resting.',
+		'func' : function(cmd) {
+			sessionData.mode = 'camp';
+			console.log();
+			util.echo('You awake from your rest.');
+			console.log();
+		}
+	},
+
+	// wakes character from resting
+	'cook' : {
+		'grp' : 'Camping',
+		'des' : '<recipe name> - cooks raw food into cooked food.',
+		'func' : function(cmd) {
+			cmd.shift();
+			var recipeName = cmd.join(' ').trim();
+
+			if(recipeName.length > 0) {
+				var recipe = itemMod.recipeExists(recipeName);
+				if(recipe) {
+					if(itemMod.recipeIsLearned(recipeName)) {
+						var ingredients = recipe.rqs;
+						var canBeMade = true;
+						for(var ingredient in ingredients) {
+							if(!itemMod.isInInv(ingredient, ingredients[ingredient])) {
+								canBeMade = false;
+								break;
+							}
+						}
+						if(canBeMade) {
+							for(var ingredient in ingredients) {
+								itemMod.remFromInv(ingredient, ingredients[ingredient]);
+							}
+							itemMod.addToInv(recipe.out, recipe.qty, true);
+						}
+						else {
+							console.log();
+							util.echo('You lack the necessary ingredients.');
+							console.log();
+						}
+					}
+					else {
+						console.log();
+						util.echo('You do not know any recipes with this name. Use "view" to view your learned recipes.');
+						console.log();
+					}
+				}
+				else {
+					console.log();
+					util.echo('Recipe does not exist.');
+					console.log();
+				}
+			}
+			else {
+				console.log();
+				util.echo('No recipe name given.');
+				console.log();
+			}
+		}
+	},
+
+	// views a list
+	'view' : {
+		'grp' : 'Miscellaneous',
+		'des' : '<list> - lets you view the contents of a list.',
+		'func' : function(cmd) {
+			cmd.shift();
+			var menu = cmd.join(' ').trim();
+			var list;
+			if(menu.length > 0) {
+				switch(menu.trim().toLowerCase()) {
+					case 'recipes':
+						list = userData.recipes;
+						break;
+				}
+				if(list !== null && list !== undefined){
+					if(Object.keys(list).length > 0) {
+						console.log();
+						util.echo(`"${menu}":`);
+						console.log();
+						list.forEach(function(item) {
+							util.echo(`+ ${item}`);
+						});
+						console.log();
+					}
+					else {
+						console.log();
+						util.echo(`Your "${menu}" list is empty.`);
+						console.log();
+					}
+				}
+				else {
+					console.log();
+					util.echo('That list does not exist.');
+					console.log();
+				}
+			}
+			else {
+				console.log();
+				util.echo('No list name provided. For instructions on how to use "view", use the "info" command.');
+				console.log();
+			}
+		}
+	},
+
+	// reads a book, activating its effects
+	'read' : {
+		'grp' : 'Miscellaneous',
+		'des' : '<book> - reads a book, activating any effects it has.',
+		'func' : function(cmd) {
+			cmd.shift();
+			var book = cmd.join(' ').trim();
+			if(book.length > 0) {
+				book = itemMod.isInInv(book);
+				if(book) {
+					book = items[book];
+
+					// checks if the book has any effects
+					if(book.effects !== undefined && Object.keys(book.effects).length > 0) {
+
+						// checks if the book has any learnable skills
+						var skills =  book.effects.learn;
+						if(skills !== undefined) {
+							console.log(skills);
+							skills.forEach(function(skill) {
+								if(skill.typ == 'recipe') {
+									var recipe = skill.nam;
+									userData.recipes.push(recipe);
+									console.log();
+									util.echo(`You learned a new recipe for "${recipe}"!`);
+								}
+							});
+							console.log();
+						}
+						else {
+							util.echo('This book has no learnable skills.');
+							console.log();
+						}
+					}
+					else {
+						console.log();
+						util.echo('This book has no effects.');
+						console.log();
+					}
+				}
+				else {
+					console.log();
+					util.echo('You do not posess a book with that title.');
+					console.log();
+				}
+			}
+			else {
+				console.log();
+				util.echo('No book name provided. For instructions on how to use "read", use the "info" command.');
+				console.log();
+			}
+		}
 	}
 };
 
@@ -825,7 +1062,9 @@ function run(){
 
 	// code that runs on startup
 	if(sessionData.cycle === 0){
+
 		try {
+
 			loadResources();
 
 			console.log('\n !=================== [Welcome to SideDown!] ===================!');

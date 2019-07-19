@@ -2,9 +2,14 @@ const fs = require('fs');
 const chalk = require('chalk');
 
 var config = {};
+var commands = {};
 
 exports.setConfig = function(data){
 	config = data;
+}
+
+exports.setCommands = function(data){
+	commands = data;
 }
 
 exports.getTimestamp = function(readable){
@@ -94,7 +99,7 @@ exports.echo = function(string, preserve, padding){
 			if(end > (string.length)) {
 				end = (string.length);
 			}
-			console.log(padding + (string.substring(lastI, end).replace(/~/g, chalk.cyan('~')).replace(/Y/g, chalk.green('Y'))));
+			console.log(padding + (string.substring(lastI, end).replace(/~/g, chalk.cyan('~')).replace(/Y/g, chalk.green('Y')).replace(/\^/g, chalk.gray('^'))));
 			lastI += width;
 		}
 	}
@@ -178,4 +183,11 @@ exports.generateSpacer = function(char){
 		spacer += char;
 	}
 	return spacer;
+}
+
+
+exports.getCmdGrp = function(cmd){
+	var grp = null;
+	grp = commands[cmd].grp;
+	return grp;
 }

@@ -5,7 +5,7 @@
 		"loc":{
 			"Dysphoria":{
 				"map":"./library/resources/maps/Dysphoria.txt",
-				"typ":"village",
+				"typ":"town",
 				"cre":{
 					"Thief":0.5,
 					"Thug":0.5
@@ -32,7 +32,6 @@
 			"Fort Regice":{
 				"map":"./library/resources/maps/Fort Regice.txt",
 				"typ":"fort",
-				
 				"dsc":"As you approach the entrance to Fort Regice, you marvel at its superior craftsmanship. Despite being constructed primarily of wooden timbers, the outpost was clearly designed with precision by artisans. The fort is surrounded by open fields for many yards and protected by a tall stockade. The true wonder, however, is undoubtedly the wooden and stone watchtower at its center, which can be seen for miles around and which symbolizes the Empire's watch over the province.",
 				"cre":{
 					"Wolf":1
@@ -41,6 +40,25 @@
 				"min":false,
 				"chp":false,
 				"fge":false
+			},
+			"Lethaar":{
+				"map":"./library/resources/maps/Lethaar.txt",
+				"typ":"village",
+				"dsc":"A town sitting on the border of the Pinelands whose primary industry is lumber.",
+				"cre":{
+					"Wolf":1
+				},
+				"fsh":false,
+				"min":false,
+				"chp":{
+					"23":0.75,
+					"2":0.25
+				},
+				"fge":{
+					"Mushroom":0.4,
+					"Berries":0.3,
+					"Nuts":0.3
+				}
 			}
 		}
 	}

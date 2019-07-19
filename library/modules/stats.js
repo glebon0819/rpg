@@ -366,3 +366,17 @@ exports.assign = function(cmd){
 		console.log();
 	}
 }
+
+// returns whether a stat is at a certain value
+exports.statCheck = function(stat, value) {
+	var pass = false;
+	if(module.exports.isStat(stat)) {
+		if(userData.stats[stat] >= value) {
+			pass = true;
+		}
+	}
+	else {
+		throw `"${stat}" is not a stat.`;
+	}
+	return pass;
+}

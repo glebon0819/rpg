@@ -53,14 +53,21 @@
 				"8":"help",
 				"9":"cls"
 			},
-			"black":{}
+			"black":{},
+			"whiteGroup":{},
+			"blackGroup":{}
 		},
 		"general":{
 			"white":{},
 			"black":{
 				"0":"flee",
-				"1":"continue"
-			}
+				"1":"continue",
+				"2":"leave",
+				"3":"rest",
+				"4":"cook"
+			},
+			"whiteGroup":{},
+			"blackGroup":{}
 		},
 		"market":{
 			"white":{
@@ -68,7 +75,9 @@
 				"1":"sell",
 				"2":"buy"
 			},
-			"black":{}
+			"black":{},
+			"whiteGroup":{},
+			"blackGroup":{}
 		},
 		"adventure":{
 			"white":{},
@@ -78,8 +87,37 @@
 				"2":"mine",
 				"3":"fish",
 				"4":"forage",
-				"5":"chop"
-			}
+				"5":"chop",
+				"6":"camp",
+				"7":"leave",
+				"8":"rest",
+				"9":"cook"
+			},
+			"whiteGroup":{},
+			"blackGroup":{}
+		},
+		"camp":{
+			"white":{},
+			"black":{
+				"1":"travel",
+				"2":"adventure",
+				"3":"adv"
+			},
+			"whiteGroup":{},
+			"blackGroup":{}
+		},
+		"rest":{
+			"white":{
+				"0":"wake"
+			},
+			"black":{},
+			"whiteGroup":{
+				"0":"Profile",
+				"1":"Inventory",
+				"2":"Equipment",
+				"3":"Miscellaneous"
+			},
+			"blackGroup":{}
 		}
 	},
 	"defaultProfile":{
@@ -102,26 +140,41 @@
 			"apc":null
 		},
 		"inv":{
-			"1":{
+			"Health Potion":{
 				"qty":1
 			},
-			"5":{
+			"Poison":{
 				"qty":1
 			},
-			"12":{
+			"Water":{
 				"qty":2
 			},
-			"15":{
+			"Rusty Dagger":{
 				"qty":1
 			},
-			"14":{
+			"Goblin Coif":{
+				"qty":1
+			},
+			"Agility Potion":{
 				"qty":3
 			},
-			"16":{
-				"qty":3
-			},
-			"17":{
+			"Lesser Ring of Intellect":{
 				"qty":2
+			},
+			"Canvas Tunic":{
+				"qty":1
+			},
+			"Linen Pants":{
+				"qty":1
+			},
+			"Leather Sandals":{
+				"qty":1
+			},
+			"Venizen":{
+				"qty":2
+			},
+			"Mountain Man's Cookbook":{
+				"qty":1
 			}
 		},
 		"stats":{
@@ -146,6 +199,7 @@
 			"prv":"Nostromo",
 			"loc":"Dysphoria"
 		},
-		"renames":{}
+		"renames":{},
+		"recipes":[]
 	}
 }

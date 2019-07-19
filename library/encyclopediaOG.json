@@ -1,71 +1,84 @@
 {
-	"Health Potion":{
+	"1":{
+		"nam":"Health Potion",
 		"val":5,
 		"typ":"potion",
 		"effects":{
 			"hp":10
 		}
 	},
-	"Oak Log":{
+	"2":{
+		"nam":"Oak Log",
 		"val":0.25,
 		"typ":"wood"
 	},
-	"Bass":{
+	"3":{
+		"nam":"Bass",
 		"val":0.25,
 		"typ":"food",
 		"effects":{
 			"hp":5
 		}
 	},
-	"Iron Ore":{
+	"4":{
+		"nam":"Iron Ore",
 		"val":3,
 		"typ":"misc"
 	},
-	"Poison":{
+	"5":{
+		"nam":"Poison",
 		"val":5,
 		"typ":"beverage",
 		"effects":{
 			"hp":-100
 		}
 	},
-	"Berries":{
+	"6":{
+		"nam":"Berries",
 		"val":0.5,
 		"typ":"food",
 		"effects":{
 			"hp":2
 		}
 	},
-	"Nuts":{
+	"7":{
+		"nam":"Nuts",
 		"val":0.10,
 		"typ":"food"
 	},
-	"Squash":{
+	"8":{
+		"nam":"Squash",
 		"val":0.10,
 		"typ":"food"
 	},
-	"Mushroom":{
+	"9":{
+		"nam":"Mushroom",
 		"val":0.05,
 		"typ":"food",
 		"effects":{
 			"hp":2
 		}
 	},
-	"Carrot":{
+	"10":{
+		"nam":"Carrot",
 		"val":0.10,
 		"typ":"food"
 	},
-	"Gold Ore":{
+	"11":{
+		"nam":"Gold Ore",
 		"val":8,
 		"typ":"misc"
 	},
-	"Water":{
+	"12":{
+		"nam":"Water",
 		"val":0.25,
 		"typ":"beverage",
 		"effects":{
 			"ap":10
 		}
 	},
-	"Crusader's Helmet":{
+	"13":{
+		"nam":"Crusader's Helmet",
 		"val":10,
 		"hpm":100,
 		"typ":"armor",
@@ -76,7 +89,8 @@
 			"stamina":1
 		}
 	},
-	"Goblin Coif":{
+	"14":{
+		"nam":"Goblin Coif",
 		"val":3,
 		"hpm":60,
 		"typ":"armor",
@@ -87,7 +101,8 @@
 			"resilience":1
 		}
 	},
-	"Rusty Dagger":{
+	"15":{
+		"nam":"Rusty Dagger",
 		"val":3,
 		"hpm":50,
 		"typ":"weapon",
@@ -98,7 +113,8 @@
 			"speed":2
 		}
 	},
-	"Agility Potion":{
+	"16":{
+		"nam":"Agility Potion",
 		"val":10,
 		"typ":"potion",
 		"buffs":{
@@ -108,7 +124,8 @@
 			}
 		}
 	},
-	"Lesser Ring of Intellect":{
+	"17":{
+		"nam":"Lesser Ring of Intellect",
 		"val":5,
 		"typ":"armor",
 		"slt":"ring",
@@ -117,109 +134,99 @@
 			"intellect":1
 		}
 	},
-	"Catfish":{
+	"18":{
+		"nam":"Catfish",
 		"val":0.5,
 		"typ":"food",
 		"effects":{
 			"hp":10
 		}
 	},
-	"Trout":{
+	"19":{
+		"nam":"Trout",
 		"val":0.25,
 		"typ":"food",
 		"effects":{
 			"hp":5
 		}
 	},
-	"Bluegill":{
+	"20":{
+		"nam":"Bluegill",
 		"val":0.01,
 		"typ":"misc"
 	},
-	"Frog":{
+	"21":{
+		"nam":"Frog",
 		"val":0.15,
 		"typ":"food",
 		"effects":{
 			"hp":4
 		}
 	},
-	"Old Boot":{
+	"22":{
+		"nam":"Old Boot",
 		"val":0.01,
 		"typ":"misc"
 	},
-	"Pine Log":{
+	"23":{
+		"nam":"Pine Log",
 		"val":0.10,
 		"typ":"wood"
 	},
-	"Tattered Wolf Pelt":{
+	"24":{
+		"nam":"Tattered Wolf Pelt",
 		"val":0.15,
 		"typ":"misc"
 	},
-	"Canvas Tunic":{
+	"25":{
+		"nam":"Canvas Tunic",
 		"val":0.20,
 		"typ":"armor",
 		"slt":"chest",
 		"arm":0
 	},
-	"Chainmail Tunic":{
+	"26":{
+		"nam":"Chainmail Tunic",
 		"val":2,
 		"typ":"armor",
 		"slt":"chest",
 		"arm":6
 	},
-	"Linen Pants":{
+	"27":{
+		"nam":"Linen Pants",
 		"val":0.25,
 		"typ":"armor",
 		"slt":"pants",
 		"arm":0
 	},
-	"Calfskin Boots":{
+	"28":{
+		"nam":"Calfskin Boots",
 		"val":0.80,
 		"typ":"armor",
 		"slt":"boots",
 		"arm":1
 	},
-	"Leather Sandals":{
+	"29":{
+		"nam":"Leather Sandals",
 		"val":0.10,
 		"typ":"armor",
 		"slt":"boots",
 		"arm":0
 	},
-	"Venizen":{
+	"30":{
+		"nam":"Venizen",
 		"val":0.05,
 		"typ":"food",
 		"effects":{
 			"hp":6
 		}
 	},
-	"Deer Steak":{
+	"31":{
+		"nam":"Deer Steak",
 		"val":0.08,
 		"typ":"food",
 		"effects":{
 			"hp":10
 		}
-	},
-	"Mushroom Soup":{
-		"val":0.1,
-		"typ":"food",
-		"effects":{
-			"hp":15
-		}
-	},
-	"Mountain Man's Cookbook":{
-		"val":0.8,
-		"typ":"book",
-		"effects":{
-			"learn":[
-				{ 
-					"typ":"recipe",
-					"nam":"Deer Steak"
-				},
-				{ 
-					"typ":"recipe",
-					"nam":"Mushroom Soup"
-				}
-			]
-		},
-		"contents":"./library/resources/books/Mountain Man's Cookbook.txt"
 	}
 }

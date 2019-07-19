@@ -1,28 +1,28 @@
 ################################################################
 #YYYYYYYYYYYYYYYYYYYYYYYY                                 ~~   #
 #YYYYYYYYYYYYYYYYYYYYY                                   ~~    #
-#YYYYYYYYYYYYYYYYYYY                                   ~~      #
+#YY The Pinelands YY                                   ~~      #
 #YYYYYYYYYYYYYYYYYY                                  ~~        #
 #YYYYYYYYYYYYYYYYYYY                              ~~           #
 #YYYYYYYYYYYYYYYYYY                            ~~              #
-#YYYYYYYYYYYYYYYYYY                          ~~                #
-#YYYYYYYYYYYYYYYYYY                         ~~                 #
-# YYYYYYYYYYYYYYYYY                        ~~                  #
-#    YYYYYYYYYYYY                          ~~                  #
-#       YYYYYYY                           ~~                   #
-#                                       ~~                     #
-#                                     ~~                       #
+#YYYYYYYYYYYYYYY Lethaar                     ~~                #
+#YYYYYYYYYYYYYYYYYY *.                      ~~                 #
+# YYYYYYYYYYYYYYYYY   .                    ~~                  #
+#    YYYYYYYYYYYY      .                   ~~                  #
+#       YYYYYYY         .                 ~~                   #
+#                         .             ~~                     #
+#                           .         ~~                       #
 #                          Dysphoria ~~                        #
 #                                * == .                        #
 #                                ~~    .                       #
-#                              ~~       .                      #
-#                            ~~            . .                 #
-#                      ~~~~~                    .              #
-#                    ~~                            .           #
-#                  ~~                                *         #
-#                ~~                              Fort Regice   #
-#               ~~                                             #
-#               ~~                                             #
-#              ~~                                              #
-#            ~~                                                #
+#                              ~~       .                     ~#
+#                            ~~            . .              ~  #
+#                      ~~~~~                    .       ~ ~    #
+#                    ~~                            .  ~        #
+#                  ~~                           ~  ~ *         #
+#                ~~                      ~  ~    Fort Regice   #
+#               ~~                   ~                         #
+#               ~~              ~  ~                           #
+#              ~~            ~                                 #
+#            ~~           ~                                    #
 ################################################################

@@ -1,0 +1,36 @@
+
+   Requires:
+   
+   
+
+   
+   
+
+################################################################
+#                   Mountain Man's Cookbook                    #
+#                                                              #
+#  Deer Steak:                                                 #
+#                                                              #
+#  Requires:                                                   #
+#  2 Venizen                                                   #
+#                                                              #
+#                                                              #
+#  Mushroom Soup:                                              #
+#                                                              #
+#  Requires:                                                   #
+#  3 Mushrooms                                                 #
+#  1 Water                                                     #
+#                                                              #
+#  Instructions:                                               #
+#  1. Bring water to a boil.                                   #
+#  2. Add mushrooms.                                           #
+#  3. Enjoy your nasty soup.                                   #
+#                                                              #
+#                                                              #
+#                                                              #
+#                                                              #
+#                                                              #
+#                                                              #
+#                                                              #
+#                                                              #
+################################################################

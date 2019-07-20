@@ -37,7 +37,10 @@
 	},
 	"Nuts":{
 		"val":0.10,
-		"typ":"food"
+		"typ":"food",
+		"effects":{
+			"hp":2
+		}
 	},
 	"Squash":{
 		"val":0.10,
@@ -52,7 +55,10 @@
 	},
 	"Carrot":{
 		"val":0.10,
-		"typ":"food"
+		"typ":"food",
+		"effects":{
+			"hp":2
+		}
 	},
 	"Gold Ore":{
 		"val":8,
@@ -62,6 +68,7 @@
 		"val":0.25,
 		"typ":"beverage",
 		"effects":{
+			"hp":5,
 			"ap":10
 		}
 	},
@@ -92,10 +99,9 @@
 		"hpm":50,
 		"typ":"weapon",
 		"slt":"weapon",
-		"dmg":"15",
+		"dmg":15,
 		"stats":{
-			"agility":1,
-			"speed":2
+			"agility":2
 		}
 	},
 	"Agility Potion":{
@@ -133,7 +139,10 @@
 	},
 	"Bluegill":{
 		"val":0.01,
-		"typ":"misc"
+		"typ":"misc",
+		"effects":{
+			"hp":4
+		}
 	},
 	"Frog":{
 		"val":0.15,
@@ -188,14 +197,14 @@
 		"val":0.05,
 		"typ":"food",
 		"effects":{
-			"hp":6
+			"hp":5
 		}
 	},
 	"Deer Steak":{
 		"val":0.08,
 		"typ":"food",
 		"effects":{
-			"hp":10
+			"hp":12
 		}
 	},
 	"Mushroom Soup":{
@@ -210,7 +219,7 @@
 		"typ":"book",
 		"effects":{
 			"learn":[
-				{ 
+				{
 					"typ":"recipe",
 					"nam":"Deer Steak"
 				},
@@ -221,5 +230,9 @@
 			]
 		},
 		"contents":"./library/resources/books/Mountain Man's Cookbook.txt"
+	},
+	"Pristine Wolf Pelt":{
+		"val":0.5,
+		"typ":"misc"
 	}
 }

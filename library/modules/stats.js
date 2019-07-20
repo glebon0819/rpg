@@ -16,10 +16,22 @@ exports.setConfig = function(data){
 	config = data;
 }
 
+/*
+agility - affects dodging, parrying, fleeing, who attacks first, likelihood of being dodged.
+strength - affects damage, carry weight
+stamina - affects maximum ap
+charisma - affects buying and selling, dialogue
+resilience - affects maximum hp
+intellect - 
+perception - affects quests, loot
+constitution - affects debuff durations, ap regen rate, hp regen rate
+*/
+
 function levelUp(levels, ech){
 	if(Number.isInteger(levels) && levels > 0){
 		if((userData.gen.lvl + levels) <= config.levels.LEVEL_CAP){
 			userData.gen.lvl += levels;
+			userData.gen.poi++;
 		}
 		else{
 			userData.gen.lvl = config.levels.LEVEL_CAP;
@@ -136,7 +148,7 @@ exports.changeAp = function(val, ech){
 	}
 
 	if(ech === true){
-		console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
+		console.log(`   ${(val > 0 ? '+' : '-')}  AP: (${userData.gen.ap}/${userData.gen.apm}).\n`);
 	}
 
 	// set the last time AP was changed to now
@@ -233,7 +245,7 @@ exports.gainXp = function(xp){
 	var currentXp = userData.gen.exp;
 	var currentXpCap = config.levels[currentLvl].XP_CAP;
 
-	console.log(`lvl: ${currentLvl}, xp: ${currentXp}, xpCap: ${currentXpCap}`);
+	//console.log(`lvl: ${currentLvl}, xp: ${currentXp}, xpCap: ${currentXpCap}`);
 
 	if(Number.isInteger(xp) && xp > 0){
 		if((currentXp + xp) < currentXpCap){
@@ -340,13 +352,21 @@ exports.stats = function(cmd){
 
 exports.assign = function(cmd){
 	cmd.shift();
+	var stat = cmd[Object.keys(cmd)[1]];
+	var points = parseInt(cmd[Object.keys(cmd)[0]]);
 	if(Object.keys(cmd).length === 2){
-		if(module.exports.isStat(cmd[Object.keys(cmd)[1]])){
-			if(parseInt(cmd[Object.keys(cmd)[0]]) > 0){
-				if(userData.gen.poi >= parseInt(cmd[Object.keys(cmd)[0]])){
-					userData.stats[cmd[Object.keys(cmd)[1]]] += parseInt(cmd[Object.keys(cmd)[0]]);
-					userData.gen.poi -= parseInt(cmd[Object.keys(cmd)[0]]);
-					console.log(`\n   '${cmd[Object.keys(cmd)[1]]}' changed to ${userData.stats[cmd[Object.keys(cmd)[1]]]}.\n`);
+		if(module.exports.isStat(stat)){
+			if(points > 0){
+				if(userData.gen.poi >= points){
+					userData.stats[stat] += points;
+					userData.gen.poi -= points;
+					if(stat == 'resilience') {
+						userData.gen.hpm += (10 * points);
+					}
+					else if(stat == 'stamina') {
+						userData.gen.apm += (10 * points);
+					}
+					console.log(`\n   '${stat}' changed to ${userData.stats[stat]}.\n`);
 				}
 				else{
 					console.log('\n   Insufficient unassigned stat points to make that assignment.\n');

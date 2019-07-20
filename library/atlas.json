@@ -46,7 +46,8 @@
 				"typ":"village",
 				"dsc":"A town sitting on the border of the Pinelands whose primary industry is lumber.",
 				"cre":{
-					"Wolf":1
+					"Wolf":0.5,
+					"Bandit":0.5
 				},
 				"fsh":false,
 				"min":false,

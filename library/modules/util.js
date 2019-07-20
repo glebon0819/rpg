@@ -56,7 +56,7 @@ exports.getTimestamp = function(readable){
 }
 
 // logs strings to the console while maintaining the predefined character width of the game
-exports.echo = function(string, preserve, padding){
+exports.echo = function(string, preserve, pad, padding){
 	string = string.trim();
 	var width = config.GAME_CHAR_WIDTH;
 	var lastI = 0;
@@ -86,7 +86,14 @@ exports.echo = function(string, preserve, padding){
 					}
 				}
 			}
-			console.log(padding + string.substring(lastI, end).trim());
+			if(pad !== undefined && pad === true) {
+				console.log();
+				console.log(padding + string.substring(lastI, end).trim());
+				console.log();
+			}
+			else {
+				console.log(padding + string.substring(lastI, end).trim());
+			}
 			lastI = end;
 			if(lastI >= lastCharI) {
 				done = true;
@@ -99,7 +106,14 @@ exports.echo = function(string, preserve, padding){
 			if(end > (string.length)) {
 				end = (string.length);
 			}
-			console.log(padding + (string.substring(lastI, end).replace(/~/g, chalk.cyan('~')).replace(/Y/g, chalk.green('Y')).replace(/\^/g, chalk.gray('^'))));
+			if(pad !== undefined && pad === true) {
+				console.log();
+				console.log(padding + (string.substring(lastI, end).replace(/~/g, chalk.cyan('~')).replace(/Y/g, chalk.green('Y')).replace(/\^/g, chalk.gray('^'))));
+				console.log();
+			}
+			else {
+				console.log(padding + (string.substring(lastI, end).replace(/~/g, chalk.cyan('~')).replace(/Y/g, chalk.green('Y')).replace(/\^/g, chalk.gray('^'))));
+			}
 			lastI += width;
 		}
 	}
@@ -133,7 +147,7 @@ exports.randNum = function(ceiling, floor) {
 	if(!floor) {
 		floor = 0;
 	}
-	return Math.floor((Math.random() * ceiling) - floor);
+	return Math.floor((Math.random() * ceiling) + floor);
 }
 
 // prints contents of a text file to the console

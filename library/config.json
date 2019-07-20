@@ -64,7 +64,8 @@
 				"1":"continue",
 				"2":"leave",
 				"3":"rest",
-				"4":"cook"
+				"4":"cook",
+				"5":"attack"
 			},
 			"whiteGroup":{},
 			"blackGroup":{}
@@ -101,7 +102,8 @@
 			"black":{
 				"1":"travel",
 				"2":"adventure",
-				"3":"adv"
+				"3":"adv",
+				"4":"attack"
 			},
 			"whiteGroup":{},
 			"blackGroup":{}
@@ -131,6 +133,7 @@
 			"hpm":100,
 			"ap":100,
 			"apm":100,
+			"arm":0,
 			"exp":0,
 			"gld":5,
 			"slv":50,
@@ -178,12 +181,14 @@
 			}
 		},
 		"stats":{
-			"strength":0,
-			"stamina":0,
-			"resilience":0,
+			"agility":0,
+			"charisma":0,
+			"constitution":0,
 			"intellect":0,
-			"speed":0,
-			"agility":0
+			"perception":0,
+			"resilience":0,
+			"stamina":0,
+			"strength":0
 		},
 		"equipment":{
 			"helmet":{},
@@ -197,7 +202,7 @@
 		"buffs":{},
 		"location":{
 			"prv":"Nostromo",
-			"loc":"Dysphoria"
+			"loc":"Lethaar"
 		},
 		"renames":{},
 		"recipes":[]

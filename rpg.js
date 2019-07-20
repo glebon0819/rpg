@@ -185,6 +185,52 @@ function setUserData(data){
 	stats.setUserData(data);
 }
 
+function Monster(name) {
+	this.nam = name;
+
+	// establishes monster's health and max health
+	this.hp = monsters[this.nam].hp;
+	this.hpm = monsters[this.nam].hp;
+	this.alive = true;
+
+	this.xp = monsters[this.nam].xp;
+	this.abilities = monsters[this.nam].abilities;
+	this.loot = monsters[this.nam].loot;
+
+	// method for reducing the monster's hp
+	this.subtractHp = function(points) {
+		this.hp -= points;
+		if(this.hp <= 0) {
+			this.hp = 0;
+			this.alive = false;
+		}
+	}
+
+	// method for making the monster attack
+	this.attack = function() {
+		var abilities = Object.keys(this.abilities);
+		var abilityIndex = util.randNum(abilities.length, 1);
+		var attack = abilities[abilityIndex - 1];
+		//var attack = util.randPick(this.abilities);
+		var damage = (this.abilities[attack].dmg * -1) + userData.gen.arm;
+		var armour = userData.gen.arm;
+
+		if(damage > 0) {
+			damage = 0;
+		}
+		util.echo(`${this.nam} attacks using ${attack}, dealing ${damage * -1} damage!`, false, true);
+		stats.changeHp(damage);
+	}
+
+	// loots the monster, adding random items to the player's inventory
+	this.lootCorpse = function() {
+		var itemNumber = util.randNum(3, 1);
+		for(var i = 0; i < itemNumber; i++) {
+			itemMod.addToInv(util.randPick(this.loot), 1, true);
+		}
+	}
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -416,8 +462,9 @@ var commandMap = {
 			console.log(`
    ${userData.gen.nam}:
    
-   +  HP: ${userData.gen.hp}
-   +  AP: ${userData.gen.ap}
+   +  HP: ${userData.gen.hp}/${userData.gen.hpm}
+   +  AP: ${userData.gen.ap}/${userData.gen.apm}
+   +  Armour: ${userData.gen.arm}
 
    +  Level: ${userData.gen.lvl}
    +  XP: ${userData.gen.exp}/${config.levels[userData.gen.lvl].XP_CAP}
@@ -445,27 +492,30 @@ var commandMap = {
 		'func' : function(cmd){
 			if(sessionData.enemy === null){
 				sessionData.mode = 'adventure';
-				sessionData.enemy = util.randPick(locations[userData.location.prv].loc[userData.location.loc].cre);
+				sessionData.enemy = new Monster(util.randPick(locations[userData.location.prv].loc[userData.location.loc].cre));
+				var enemy = sessionData.enemy;
 
-				console.log();
-				util.echo(`A ${sessionData.enemy} has appeared! You are now in combat.`);
-				console.log();
+				util.echo(`A ${enemy.nam} has appeared! You are now in combat.`, false, true);
 
-				var enemySpeed = util.randNum(20);
+				var enemyAgility = util.randNum(20, 1);
 				var roll = util.roll();
-				util.echo(`Speed check. Target: > ${enemySpeed}.`);
+				util.echo(`Agility check. Target: > ${enemyAgility}.`);
+				util.echo(`Base agility: ${userData.stats.agility}.`);
 				util.echo(`Rolled a ${roll}.`);
-				if(userData.stats.speed + roll >= enemySpeed) {
-					util.echo('Passed!');
+				var agility = userData.stats.agility + roll;
+				util.echo(`${userData.stats.agility} + ${roll} ${agility > enemyAgility ? '>' : '<'} ${enemyAgility}`);
+				if(userData.stats.agility + roll >= enemyAgility) {
+					util.echo(`Passed!`);
 					console.log('\n   You attack first!\n');
 				} else {
 					util.echo('Failed!');
-					console.log('\n   They attack first!\n');
+					console.log();
+					util.echo('They attack first!');
+					enemy.attack();
 				}
 			}
 			else{
-				console.log('\n   You attack!\n');
-				console.log('\n   They attack!\n');
+				util.echo('You are already in a battle. You must defeat your enemy before you can start another battle.', false, true);
 			}
 		}
 	},
@@ -860,6 +910,8 @@ var commandMap = {
 			if(stats.statCheck('agility', 2)){
 				sessionData.mode = 'camp';
 				console.log();
+				util.render('./library/resources/images/campfire.txt');
+				console.log();
 				util.echo('You are now camping.');
 				console.log();
 			}
@@ -1021,7 +1073,6 @@ var commandMap = {
 						// checks if the book has any learnable skills
 						var skills =  book.effects.learn;
 						if(skills !== undefined) {
-							console.log(skills);
 							skills.forEach(function(skill) {
 								if(skill.typ == 'recipe') {
 									var recipe = skill.nam;
@@ -1053,6 +1104,40 @@ var commandMap = {
 				console.log();
 				util.echo('No book name provided. For instructions on how to use "read", use the "info" command.');
 				console.log();
+			}
+		}
+	},
+
+	// attacks the current enemy with the equipped weapon
+	'attack' : {
+		'grp' : 'Adventure',
+		'des' : ' - attacks the current enemy with the equipped weapon.',
+		'func' : function(cmd) {
+			var damage = 0;
+			var enemy = sessionData.enemy;
+			if(Object.keys(userData.equipment.weapon).length > 0) {
+				for(var weapon in userData.equipment.weapon) {
+					damage += (items[weapon].dmg * userData.equipment.weapon[weapon].qty) + userData.stats.strength;
+				}
+				console.log();
+				enemy.subtractHp(damage);
+				util.echo(`Enemy's current health: ${enemy.hp}/${enemy.hpm}`);
+				util.echo('You did ' + damage + ' damage!');
+				if(!enemy.alive) {
+					console.log();
+					util.echo(`The ${enemy.nam} has been slain!`);
+					stats.gainXp(enemy.xp);
+					enemy.lootCorpse();
+					sessionData.enemy = null;
+					sessionData.mode = 'general';
+				}
+				else {
+					enemy.attack();
+				}
+				console.log();
+			}
+			else {
+				util.echo('You have no weapon equipped.', false, true);
 			}
 		}
 	}

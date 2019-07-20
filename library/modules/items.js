@@ -143,6 +143,16 @@ exports.equip = function(og){
 		// goes through each of the item's stat increases and boosts the user's stats
 		for(var stat in items[og].stats){
 			userData.stats[stat] += items[og].stats[stat];
+			if(stat == 'resilience') {
+				userData.gen.hpm += (10 * items[og].stats[stat]);
+			}
+			else if(stat == 'stamina') {
+				userData.gen.apm += (10 * items[og].stats[stat]);
+			}
+		}
+
+		if(items[og].arm !== undefined) {
+			userData.gen.arm += items[og].arm;
 		}
 	
 		// removes the item from player inventory

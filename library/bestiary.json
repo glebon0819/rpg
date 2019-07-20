@@ -52,14 +52,23 @@
 		"xp":50,
 		"wgt":10,
 		"abilities":{
-
+			"Slash":{
+				"dmg":8,
+				"spd":0.9
+			},
+			"Stab":{
+				"dmg":15,
+				"spd":0.5
+			}
 		},
 		"loot":{
-			"3":0.3,
-			"10":0.3,
-			"15":0.2,
-			"1":0.1,
-			"5":0.1
+			"Bass":0.2,
+			"Carrot":0.25,
+			"Rusty Dagger":0.2,
+			"Health Potion":0.1,
+			"Poison":0.1,
+			"Calfskin Boots":0.1,
+			"Gold Ore":0.05
 		}
 	},
 	"Thief":{
@@ -97,10 +106,17 @@
 		"xp":50,
 		"wgt":10,
 		"abilities":{
-
+			"Scratch":{
+				"dmg":10
+			},
+			"Bite":{
+				"dmg":8
+			}
 		},
 		"loot":{
-			"24":1
+			"Tattered Wolf Pelt":0.4,
+			"Tooth":0.5,
+			"Pristine Wolf Pelt":0.1
 		}
 	},
 	"Template":{

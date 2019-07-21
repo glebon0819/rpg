@@ -119,15 +119,58 @@
 			"Pristine Wolf Pelt":0.1
 		}
 	},
+	"Pine Bear":{
+		"hp":200,
+		"xp":100,
+		"wgt":10,
+		"abilities":{
+			"Maul":{
+				"dmg":20
+			},
+			"Bite":{
+				"dmg":15
+			},
+			"Charge":{
+				"dmg":10
+			}
+		},
+		"loot":{
+			"Bear Claw":0.4,
+			"Bear Meat":0.4,
+			"Bear Pelt":0.2
+		}
+	},
+	"Pine Bear Improved":{
+		"hp":200,
+		"xp":100,
+		"wgt":10,
+		"abilities":{
+			"Maul":{
+				"dmg":20
+			},
+			"Roar":{
+				"debuff":{
+					"turns":"4",
+					"stat":"constitution",
+					"val":-3
+				}
+			}
+		},
+		"loot":{
+			"Bear Claw":1
+		}
+	},
 	"Template":{
 		"hp":100,
 		"xp":50,
 		"wgt":10,
 		"abilities":{
-
+			"Ability":{
+				"dmg":10
+			}
 		},
 		"loot":{
-			"0001":10
+			"Item":1
 		}
 	}
 }

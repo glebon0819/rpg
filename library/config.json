@@ -110,7 +110,9 @@
 		},
 		"rest":{
 			"white":{
-				"0":"wake"
+				"0":"wake",
+				"1":"health",
+				"2":"hp"
 			},
 			"black":{},
 			"whiteGroup":{
@@ -140,7 +142,9 @@
 			"kll":0,
 			"dth":0,
 			"poi":5,
-			"apc":null
+			"apc":null,
+			"hpc":null,
+			"mod":"general"
 		},
 		"inv":{
 			"Health Potion":{
@@ -164,15 +168,6 @@
 			"Lesser Ring of Intellect":{
 				"qty":2
 			},
-			"Canvas Tunic":{
-				"qty":1
-			},
-			"Linen Pants":{
-				"qty":1
-			},
-			"Leather Sandals":{
-				"qty":1
-			},
 			"Venizen":{
 				"qty":2
 			},
@@ -192,9 +187,21 @@
 		},
 		"equipment":{
 			"helmet":{},
-			"chest":{},
-			"pants":{},
-			"boots":{},
+			"chest":{
+				"Canvas Tunic":{
+					"qty":1
+				}
+			},
+			"pants":{
+				"Linen Pants":{
+					"qty":1
+				}
+			},
+			"boots":{
+				"Leather Sandals":{
+					"qty":1
+				}
+			},
 			"weapon":{},
 			"ring":{}
 		},

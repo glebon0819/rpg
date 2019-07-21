@@ -3,11 +3,15 @@ const util = require('./util');
 const itemMod = require('./items');
 
 var userData = {};
+var sessionData = {};
 var items = {};
 var config = {};
 
 exports.setUserData = function(data){
 	userData = data;
+}
+exports.setSession = function(data){
+	sessionData = data;
 }
 exports.setItems = function(data){
 	items = data;
@@ -54,6 +58,11 @@ function getApIncrement(){
 	// default value for now
 	// eventually this value will be affected by the user's stats
 	return 3000;
+}
+
+// returns number of milliseconds that should elapse between AP points being regenerated while resting
+function getHpIncrement(){
+	return 10000;
 }
 
 // kills the player, resetting their userData and sending them back into start mode
@@ -133,6 +142,21 @@ exports.fixAp = function(){
 		if((currentTime - lastTime) >= getApIncrement()){
 			module.exports.changeAp(Math.floor((currentTime - lastTime) / getApIncrement()));
 		}
+	}
+}
+
+// gets HP back to its proper level after healing
+exports.fixHp = function() {
+	if(userData.gen.hp < userData.gen.hpm && sessionData.mode == 'rest') {
+		var lastTime = new Date(userData.gen.hpc);
+		var currentTime = new Date(util.getTimestamp(true));
+		if((currentTime - lastTime) >= getHpIncrement()){
+			module.exports.changeHp(Math.floor((currentTime - lastTime) / getHpIncrement()));
+		}
+		userData.gen.hpc = util.getTimestamp(true);
+	}
+	else {
+		userData.gen.hpc = null;
 	}
 }
 

@@ -40,8 +40,8 @@ function loadResources(){
 	loc.setLocations(locations);
 	stats.setItems(items);
 	stats.setConfig(config);
+	stats.setSession(sessionData);
 	util.setConfig(config);
-
 	util.setCommands(commandMap);
 }
 
@@ -341,7 +341,8 @@ var commandMap = {
 
 					setUserData(userData);
 
-					sessionData.mode = 'general';
+					//sessionData.mode = 'general';
+					sessionData.mode = userData.gen.mod;
 					
 					// clean up cooldowns, buffs, etc. left over from last session
 					cleanUp();
@@ -457,6 +458,7 @@ var commandMap = {
 	'me' : {
 		'grp' : 'Stats',
 		'func' : function(cmd){
+			stats.fixHp();
 			stats.fixAp();
 			// |///////////////////////////////=======================|
 			console.log(`
@@ -638,6 +640,7 @@ var commandMap = {
 
 				// saves user data to disc as a JSON file
 				if(userData.gen.dt2.length > 0){
+					userData.gen.mod = sessionData.mode;
 					fs.writeFileSync('./saves/' + userData.gen.dt2 + '.json', JSON.stringify(userData));
 					console.log('\n   Your progress was saved.\n');
 				}
@@ -670,6 +673,7 @@ var commandMap = {
 		'grp' : 'Stats',
 		'des' : '- Displays your HP level.',
 		'func' : function(cmd){
+			stats.fixHp();
 			console.log(`\n   Your HP: (${userData.gen.hp}/${userData.gen.hpm}).\n`);
 		}
 	},
@@ -861,7 +865,7 @@ var commandMap = {
 	// displays a map of the current province to the player
 	'map' : {
 		'grp' : 'Location',
-		'des' : '- displays a map of the location you are currently in.',
+		'des' : '<+ or ++ to increase scope>(optional) - displays a map of the location you are currently in.',
 		'func' : function(cmd){
 			cmd.shift();
 			console.log();
@@ -940,6 +944,7 @@ var commandMap = {
 		'grp' : 'Camping',
 		'des' : '- begins resting, replenishing AP at a faster rate.',
 		'func' : function(cmd) {
+			userData.gen.hpc = util.getTimestamp(true);
 			sessionData.mode = 'rest';
 			console.log();
 			util.echo('You are now resting.');
@@ -952,6 +957,7 @@ var commandMap = {
 		'grp' : 'Camping',
 		'des' : '- wakes from resting.',
 		'func' : function(cmd) {
+			stats.fixHp();
 			sessionData.mode = 'camp';
 			console.log();
 			util.echo('You awake from your rest.');

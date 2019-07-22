@@ -4,9 +4,9 @@
 #YY The Pinelands YY                                   ~~      #
 #YYYYYYYYYYYYYYYYYY                                  ~~        #
 #YYYYYYYYYYYYYYYYYYY                              ~~           #
-#YYYYYYYYYYYYYYYYYY                            ~~              #
-#YYYYYYYYYYYYYYY Lethaar                     ~~                #
-#YYYYYYYYYYYYYYYYYY *.                      ~~                 #
+#Y~~YY 1 YYYYYYYYYY                            ~~              #
+#YYYYYYYY.YYY.YY Lethaar                     ~~                #
+#YYYYYYYYYYYYYYYY.Y *.                      ~~                 #
 # YYYYYYYYYYYYYYYYY   .                    ~~                  #
 #    YYYYYYYYYYYY      .                   ~~                  #
 #       YYYYYYY         .                 ~~                   #

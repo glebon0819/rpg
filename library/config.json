@@ -112,7 +112,10 @@
 			"white":{
 				"0":"wake",
 				"1":"health",
-				"2":"hp"
+				"2":"hp",
+				"3":"ap",
+				"4":"me",
+				"5":"map"
 			},
 			"black":{},
 			"whiteGroup":{

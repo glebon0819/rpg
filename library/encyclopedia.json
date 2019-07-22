@@ -95,7 +95,7 @@
 		}
 	},
 	"Rusty Dagger":{
-		"val":3,
+		"val":0.5,
 		"hpm":50,
 		"typ":"weapon",
 		"slt":"weapon",
@@ -215,7 +215,7 @@
 		}
 	},
 	"Mountain Man's Cookbook":{
-		"val":0.8,
+		"val":0.5,
 		"typ":"book",
 		"effects":{
 			"learn":[
@@ -232,7 +232,32 @@
 		"contents":"./library/resources/books/Mountain Man's Cookbook.txt"
 	},
 	"Pristine Wolf Pelt":{
-		"val":0.5,
+		"val":0.8,
 		"typ":"misc"
+	},
+	"Bear Claw":{
+		"val":0.8,
+		"typ":"misc"
+	},
+	"Bear Pelt":{
+		"val":2,
+		"typ":"misc"
+	},
+	"Bear Meat":{
+		"val":0.2,
+		"typ":"food",
+		"effects":{
+			"hp":10
+		}
+	},
+	"Dull Shortsword":{
+		"val":1,
+		"typ":"weapon",
+		"slt":"weapon",
+		"dmg":18,
+		"stats":{
+			"agility":1,
+			"stamina":1
+		}
 	}
 }

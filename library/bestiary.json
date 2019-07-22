@@ -5,6 +5,7 @@
 		"abilities":{
 			
 		},
+		"gold":1,
 		"loot":{
 			"14":0.2,
 			"15":0.2,
@@ -21,6 +22,7 @@
 		"abilities":{
 
 		},
+		"gold":1,
 		"loot":{
 			"14":0.2,
 			"15":0.2,
@@ -37,6 +39,7 @@
 		"abilities":{
 
 		},
+		"gold":1,
 		"loot":{
 			"14":0.2,
 			"15":0.2,
@@ -50,7 +53,6 @@
 	"Bandit":{
 		"hp":100,
 		"xp":50,
-		"wgt":10,
 		"abilities":{
 			"Slash":{
 				"dmg":8,
@@ -61,38 +63,48 @@
 				"spd":0.5
 			}
 		},
+		"gold":2,
 		"loot":{
-			"Bass":0.2,
-			"Carrot":0.25,
+			"Bass":0.1,
+			"Carrot":0.15,
 			"Rusty Dagger":0.2,
 			"Health Potion":0.1,
 			"Poison":0.1,
+			"Dull Shortsword":0.1,
 			"Calfskin Boots":0.1,
+			"Chainmail Tunic":0.1,
 			"Gold Ore":0.05
 		}
 	},
 	"Thief":{
 		"hp":100,
 		"xp":50,
-		"wgt":10,
 		"abilities":{
-
+			"Slash":{
+				"dmg":8,
+				"spd":0.9
+			},
+			"Stab":{
+				"dmg":15,
+				"spd":0.5
+			}
 		},
+		"gold":4,
 		"loot":{
-			"3":0.3,
-			"10":0.3,
-			"15":0.2,
-			"1":0.1,
-			"5":0.1
+			"Bass":0.3,
+			"Carrot":0.3,
+			"Rusty Dagger":0.2,
+			"Health Potion":0.1,
+			"Poison":0.1
 		}
 	},
 	"Thug":{
 		"hp":100,
 		"xp":50,
-		"wgt":10,
 		"abilities":{
 
 		},
+		"gold":1,
 		"loot":{
 			"3":0.3,
 			"10":0.3,
@@ -104,7 +116,6 @@
 	"Wolf":{
 		"hp":100,
 		"xp":50,
-		"wgt":10,
 		"abilities":{
 			"Scratch":{
 				"dmg":10
@@ -113,6 +124,7 @@
 				"dmg":8
 			}
 		},
+		"gold":false,
 		"loot":{
 			"Tattered Wolf Pelt":0.4,
 			"Tooth":0.5,
@@ -122,7 +134,6 @@
 	"Pine Bear":{
 		"hp":200,
 		"xp":100,
-		"wgt":10,
 		"abilities":{
 			"Maul":{
 				"dmg":20
@@ -134,6 +145,7 @@
 				"dmg":10
 			}
 		},
+		"gold":false,
 		"loot":{
 			"Bear Claw":0.4,
 			"Bear Meat":0.4,
@@ -143,7 +155,6 @@
 	"Pine Bear Improved":{
 		"hp":200,
 		"xp":100,
-		"wgt":10,
 		"abilities":{
 			"Maul":{
 				"dmg":20
@@ -156,6 +167,7 @@
 				}
 			}
 		},
+		"gold":false,
 		"loot":{
 			"Bear Claw":1
 		}
@@ -163,12 +175,12 @@
 	"Template":{
 		"hp":100,
 		"xp":50,
-		"wgt":10,
 		"abilities":{
 			"Ability":{
 				"dmg":10
 			}
 		},
+		"gold":1,
 		"loot":{
 			"Item":1
 		}

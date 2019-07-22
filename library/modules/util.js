@@ -150,6 +150,14 @@ exports.randNum = function(ceiling, floor) {
 	return Math.floor((Math.random() * ceiling) + floor);
 }
 
+// generates a random float within a certain range
+exports.randFloat = function(ceiling, floor) {
+	if(!floor) {
+		floor = 0;
+	}
+	return ((Math.random() * ceiling) + floor).toFixed(2);
+}
+
 // prints contents of a text file to the console
 exports.render = function(path){
 

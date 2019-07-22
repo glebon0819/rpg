@@ -50,12 +50,36 @@
 					"Bandit":0.5,
 					"Pine Bear":0.1
 				},
-				"fsh":false,
+				"fsh":{
+					"20":0.6,
+					"21":0.2,
+					"22":0.05,
+					"2":0.05,
+					"19":0.05,
+					"18":0.05
+				},
 				"min":false,
 				"chp":{
 					"Pine Log":0.75,
 					"Oak Log":0.25
 				},
+				"fge":{
+					"Mushroom":0.4,
+					"Berries":0.3,
+					"Nuts":0.3
+				}
+			},
+			"1":{
+				"map":"",
+				"typ":"misc",
+				"dsc":"You are now deep within the Pinelands. No one lives this far from its edge, as foul creatures are known to terrorize this region.",
+				"cre":{
+					"Wolf":0.8,
+					"Pine Bear":0.2
+				},
+				"fsh":false,
+				"min":false,
+				"chp":false,
 				"fge":{
 					"Mushroom":0.4,
 					"Berries":0.3,

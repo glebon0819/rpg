@@ -79,36 +79,45 @@ function cmdExists(cmd){
 // checks if a command is allowed under the current mode
 function checkMode(cmd){
 	var allowed = false;
+	var done = false;
 	var whiteGrpExists = false;
 	var blackGrpExists = false;
 	
 	// if group whitelist is defined, use that
 	if(Object.keys(config.modes[sessionData.mode].whiteGroup).length > 0) {
+		//console.log('white group used')
 		whiteGrpExists = true;
 		for(var whiteGroup in config.modes[sessionData.mode].whiteGroup){
 			if(util.getCmdGrp(cmd) !== null && config.modes[sessionData.mode].whiteGroup[whiteGroup] == util.getCmdGrp(cmd)){
 				allowed = true;
+				done = true;
 			}
 		}
 	}
 
 	// else use group blacklist
-	else {
+	else if(Object.keys(config.modes[sessionData.mode].blackGroup).length > 0) {
+		//console.log('black group used');
+		blackGrpExists = true;
 		for(var commandGroup in config.modes[sessionData.mode].blackGroup){
 			if(config.modes[sessionData.mode].blackGroup[commandGroup] == util.getCmdGrp(cmd)){
 				allowed = false;
+				done = true;
 			}
 		}
 	}
 
 	// if whitelist is defined, use that
-	if(Object.keys(config.modes[sessionData.mode].white).length > 0){
-		if(blackGrpExists == false) {
-			allowed = false;
-		}
-		for(var commandKey in config.modes[sessionData.mode].white){
-			if(config.modes[sessionData.mode].white[commandKey] == cmd){
-				allowed = true;
+	if(!allowed) {
+		if(Object.keys(config.modes[sessionData.mode].white).length > 0){
+			//console.log('white list used')
+			if(!blackGrpExists) {
+				allowed = false;
+			}
+			for(var commandKey in config.modes[sessionData.mode].white){
+				if(config.modes[sessionData.mode].white[commandKey] == cmd){
+					allowed = true;
+				}
 			}
 		}
 	}
@@ -116,12 +125,15 @@ function checkMode(cmd){
 	// else use blacklist
 	//else{
 	if(Object.keys(config.modes[sessionData.mode].black).length > 0){
-		if(whiteGrpExists == false) {
+		//console.log('black list used')
+		if(!whiteGrpExists) {
 			allowed = true;
 		}
 		for(var commandKey in config.modes[sessionData.mode].black){
 			if(config.modes[sessionData.mode].black[commandKey] == cmd){
-				allowed = false;
+				if(!done) {
+					allowed = false;
+				}
 			}
 		}
 	}
@@ -196,6 +208,7 @@ function Monster(name) {
 	this.xp = monsters[this.nam].xp;
 	this.abilities = monsters[this.nam].abilities;
 	this.loot = monsters[this.nam].loot;
+	this.gold = monsters[this.nam].gold;
 
 	// method for reducing the monster's hp
 	this.subtractHp = function(points) {
@@ -224,9 +237,14 @@ function Monster(name) {
 
 	// loots the monster, adding random items to the player's inventory
 	this.lootCorpse = function() {
-		var itemNumber = util.randNum(3, 1);
+		var itemNumber = util.randNum(3 + (userData.stats.perception * 0.5), 1);
 		for(var i = 0; i < itemNumber; i++) {
 			itemMod.addToInv(util.randPick(this.loot), 1, true);
+		}
+
+		if(this.gold !== false){
+			var gold = util.randFloat(this.gold, 0);
+			itemMod.addGold(gold);
 		}
 	}
 }
@@ -942,7 +960,7 @@ var commandMap = {
 	// leaves a campsite
 	'rest' : {
 		'grp' : 'Camping',
-		'des' : '- begins resting, replenishing AP at a faster rate.',
+		'des' : '- begins resting, replenishing HP slowly.',
 		'func' : function(cmd) {
 			userData.gen.hpc = util.getTimestamp(true);
 			sessionData.mode = 'rest';

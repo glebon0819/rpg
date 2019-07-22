@@ -19,6 +19,12 @@ exports.setConfig = function(data){
 	config = data;
 }
 
+// adds gold to the player's inventory
+exports.addGold = function(qty) {
+	userData.gen.gld = (Number.parseFloat(userData.gen.gld) + Number.parseFloat(qty)).toFixed(2);
+	util.echo(`+ ${qty} gold added to inventory.`);
+}
+
 // adds items to player's inventory
 exports.addToInv = function(name, qty, ech){
 	// get inventory items
@@ -273,10 +279,10 @@ exports.inspect = function(cmd){
 	cmd.shift();
 	var itm = cmd.join(' ');
 
-	if(module.exports.isInEqp(itm) !== false || module.exports.isInInv(itm)[0] !== false){
+	if(module.exports.isInEqp(itm) !== false || module.exports.isInInv(itm) !== false){
 		var qty = 0;
 		var id = module.exports.itmExists(itm);
-
+		
 		if(module.exports.isInEqp(itm) !== false){
 			qty = userData.equipment[isInEqp(itm)][itm].qty;
 		}

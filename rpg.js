@@ -249,6 +249,73 @@ function Monster(name) {
 	}
 }
 
+function runDialogue(npc) {
+	var dialogue = npc.con;
+	var root = npc.con;
+	var i = 0;
+	var exit = false;
+	while(exit === false) {
+		if(dialogue.say !== undefined) {
+			console.log();
+			util.echo(`[${npc.nam}]:`);
+			util.echo(`"${dialogue.say}"`);
+			console.log();
+		}
+
+		// checks if there are any triggers
+		if(dialogue.trg !== undefined) {
+			var triggers = dialogue.trg;
+			triggers.forEach(function(trigger) {
+				if(trigger.typ == 'quest') {
+					userData.quests.push(trigger.val);
+				}
+			});
+		}
+
+		// checks if there are any responses for the player
+		if(dialogue.res !== undefined) {
+			var options = [];
+			for(var response in dialogue.res) {
+				options.push(dialogue.res[response].opt);
+			}
+			//var index = readlineSync.keyInSelect(options, 'What do you say?');
+			console.log();
+			util.echo('Dialogue Options:');
+			var index = util.keyInSelect(options, 'What do you say?');
+			console.log();
+			console.log();
+			util.echo(`[You]:`);
+			util.echo(`"${dialogue.res[index].opt}"`);
+			dialogue = dialogue.res[index];
+			i++;
+		}
+
+		// checks if the dialogue jumps to another branch
+		else if(dialogue.jmp !== undefined) {
+			if(dialogue.jmp !== 'root') {
+				var branches = dialogue.jmp.split('.');
+				branches.forEach(function(branch, idx) {
+					if(idx == 0) {
+						dialogue = root.res[branch];
+					}
+					else {
+						dialogue = dialogue.res[branch];
+					}
+				});
+			}
+			else {
+				dialogue = root;
+			}
+		}
+
+		// ends the conversation by making the NPC leave
+		else {
+			util.echo(`${npc.nam} walked away.`, false, true);
+			exit = true;
+		}
+	}
+}
+
 // maps commands to functions and includes data about commands
 var commandMap = {
 	// creates a new game profile
@@ -1048,6 +1115,9 @@ var commandMap = {
 					case 'recipes':
 						list = userData.recipes;
 						break;
+					case 'quests':
+						list = userData.quests;
+						break;
 				}
 				if(list !== null && list !== undefined){
 					if(Object.keys(list).length > 0) {
@@ -1162,6 +1232,37 @@ var commandMap = {
 			}
 			else {
 				util.echo('You have no weapon equipped.', false, true);
+			}
+		}
+	},
+
+	// puts you in dialogue mode with a NPC
+	'talk' : {
+		'grp' : 'Adventure',
+		'des' : '<NPC> - Talks to an NPC, beginning a dialogue tree with them.',
+		'func' : function(cmd) {
+			cmd.shift();
+			var name = cmd.join(' ').trim();
+			var npcs = locations[userData.location.prv].loc[userData.location.loc].npc;
+			var npcList = Object.keys(npcs);
+			//console.log(npcs);
+			var source = false;
+
+			npcList.forEach(function(npc) {
+				if(name.toLowerCase() == npc.toLowerCase()) {
+					source = npcs[npc];
+				}
+			});
+
+			if(source !== false) {
+				// load npc data
+				var npc = JSON.parse(fs.readFileSync(source, 'utf8'));
+				util.echo(`You walk up to ${npc.nam}`, false, true);
+				util.echo(npc.dsc);
+				runDialogue(npc);
+			}
+			else {
+				util.echo('That NPC does not exist in the current location.', false, true);
 			}
 		}
 	}

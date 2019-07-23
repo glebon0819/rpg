@@ -1,0 +1,143 @@
+{
+	"nam":"Brandon Grendal",
+	"dsc":"Brandon is a thin man with greasy brown hair wearing an apron over his dirty, faded common garb. The apron is dusted in what looks like flour.",
+	"con":{
+		"say":"Hey, man. What can I do for you?",
+		"res":{
+			"1":{
+				"opt":"I'm looking for work to do. Do you know of any odd jobs around that need doing?",
+				"say":"Well...I'm not the expert but...I know some folks have been having some trouble with the local wolf population. They attack the farmers' livestock at night. It's a real big issue at all the town meetings.",
+				"res":{
+					"1":{
+						"opt":"Sounds like something I could help with. (Accept Quest)",
+						"say":"Great! Everyone will be thrilled to hear of this. We don't have many able men who can fend off beasts and such on our borders anymore.",
+						"trg":[
+							{
+								"typ":"notoriety",
+								"val":1
+							},
+							{
+								"typ":"quest",
+								"val":"Wolfenstein"
+							}
+						],
+						"res":{
+							"1":{
+								"opt":"Why is that?",
+								"say":"Nearly every man in this town left to fight the Empire when they -- er -- arrived. Most of them never made it back. Good riddance, right? Traitors like that make me sick. <looks around>",
+								"res":{
+									"1":{
+										"opt":"Me too. The Empire has done a lot of good. Seems like scoundrels like them just slow the wheel of progress.",
+										"say":"Agreed."
+									},
+									"2":{
+										"opt":"Sounds to me like they were just defending their lands from invaders.",
+										"say":"<looks around> If I were you, I wouldn't go around saying things like that out in the open. The Magistrate does not take kindly to treasonous talk like that. You wouldn't want him to consider you a threat...trust me."
+									}
+								}
+							},
+							"2":{
+								"opt":"Well that just leaves more beasts to kill for me and more gold to collect as payment! <laughs>",
+								"say":"<irritated> I suppose that's one way to view it. I'm just glad someone is doing it.",
+								"trg":[
+									{
+										"typ":"notoriety",
+										"val":-1
+									}
+								]
+							}
+						}
+					},
+					"2":{
+						"opt":"What would be in it for me?",
+						"say":"There was a reward raised. 10 gold for 10 wolf pelts if I remember correctly.",
+						"trg":[
+							{
+								"typ":"notoriety",
+								"val":-1
+							}
+						],
+						"res":{
+							"1":{
+								"opt":"Sounds like an easy 10 gold. (Accept Quest)",
+								"trg":[
+									{
+										"typ":"quest",
+										"val":"Wolfenstein"
+									}
+								],
+								"jmp":"1.1"
+							}
+						}
+					}
+				}
+			},
+			"2":{
+				"opt":"Have you heard any rumors going around?",
+				"say":"Umm...I can't say I've heard too much that would interest a traveler. Just local gossip.",
+				"res":{
+					"1":{
+						"opt":"Let's hear it.",
+						"say":"Really? I'm surprised! We don't get many outsiders that are interested in the local goings-on...There was a woman who went missing around here a while ago. No one was arrested but most people think that the woman's husband murdered her.",
+						"res":{
+							"1":{
+								"opt":"What makes people think he did it?",
+								"say":"Well they weren't much alike. Fought a lot. So their neighbors say. He was the shy type who never much liked to go out and she wasn't. He was always prone to outbursts of anger though. He insists she left him a letter saying she didn't love him any longer and ran off. Nobody believes that crock of shit though. This is a small town. I've been around the man long enough to know he isn't the type to take news like that and just walk away.",
+								"res":{
+									"1":{
+										"opt":"What was this woman's name?",
+										"say":"Rose Draogel. Her father, Braum Draogel, was the sheriff of the town before the war. The Draogels were one of the most powerful families in Lethaar back then. Made all their money in trapping for pelts, they did. When the Empire came, Braum and most of the Draogels went off to fight them, never to return. Common story here. Such men are traitors, of course, though, and generally not to be spoken of."
+									}
+								}
+							},
+							"2":{
+								"opt":"You're probably right. Criminals aren't complicated. If he stood to gain from it, he probably murdered her.",
+								"say":"This is true. He says she told him that she didn't love him anymore and that she most likely ran off. I could see the part about not loving him being true. He's always been a creep with a temper. He broods all the time and hardly speaks a word that isn't a grumble. And she's always been a bit of a free spirit. Always struck me as a harlot in the works. So we all know if she said something like that to him, he'd have put her in the grave for sure.",
+								"res":{
+									"1":{
+										"opt":"'Sounds a bit personal. You got some grudge against this woman?'",
+										"say":"<angered> Certainly not! I courted her a wee bit years back but that's in the past now. It ain't nothing personal like that. Just the feeling I got from her is all. Always did. Even before she refused my hand.",
+										"res":{
+											"1":{
+												"opt":"'Then why did you propose to her if you thought her a harlot?'",
+												"say":"<angered> Alright, I've been friendly enough, despite your questioning. Now fuck off before I really get pissed off."
+											},
+											"2":{
+												"opt":"'Alright. I'm sorry I asked. I'll leave it alone.",
+												"say":"It's a bit personal is all. I don't much like strangers prying in my business.",
+												"res":{
+													"1":{
+														"opt":"Back",
+														"jmp":"root"
+													},
+													"2":{
+														"opt":"Leave",
+														"jmp":"out"
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"2":{
+						"opt":"Ah I see. Yeah I'm sure I wouldn't get it being from elsewhere and all.",
+						"say":"Yeah. Sorry, friend. Wish I had interesting tales of treasure hidden away in the woods to tell you. But alas, I don't know any interesting tales.",
+						"res":{
+							"1":{
+								"opt":"Back",
+								"jmp":"root"
+							},
+							"2":{
+								"opt":"Leave",
+								"jmp":"out"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

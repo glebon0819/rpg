@@ -1,5 +1,6 @@
 const fs = require('fs');
 const chalk = require('chalk');
+const readlineSync = require('readline-sync');
 
 var config = {};
 var commands = {};
@@ -212,4 +213,22 @@ exports.getCmdGrp = function(cmd){
 	var grp = null;
 	grp = commands[cmd].grp;
 	return grp;
+}
+
+// echoes options for the user to choose from; based off readline-sync's
+exports.keyInSelect = function(options, msg) {
+	/*if(msg === undefined || msg === null) {
+		msg = '';
+	}*/
+	var indices;
+	msg = ' ' + msg + ' ';
+	options.forEach(function(option, idx) {
+		module.exports.echo(`[${idx + 1}]  "${option}"`);
+		indices += (idx + 1).toString();
+	});
+	console.log();
+	var index = readlineSync.keyIn(msg, {
+    	hideEchoBack: false, mask: '', limit: indices
+	});
+	return index;
 }

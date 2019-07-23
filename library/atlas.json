@@ -67,6 +67,9 @@
 					"Mushroom":0.4,
 					"Berries":0.3,
 					"Nuts":0.3
+				},
+				"npc":{
+					"Brandon Grendal":"./library/resources/npcs/Brandon Grendal.json"
 				}
 			},
 			"1":{
@@ -79,7 +82,10 @@
 				},
 				"fsh":false,
 				"min":false,
-				"chp":false,
+				"chp":{
+					"Pine Log":0.9,
+					"Oak Log":0.1
+				},
 				"fge":{
 					"Mushroom":0.4,
 					"Berries":0.3,
